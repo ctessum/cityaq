@@ -3,6 +3,7 @@ module github.com/ctessum/cityaq
 go 1.13
 
 require (
+	github.com/andelf/go-curl v0.0.0-20200630032108-fd49ff24ed97 // indirect
 	github.com/andybalholm/brotli v0.0.0-20190821151343-b60f0d972eeb
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/ctessum/geom v0.2.10-0.20200417141930-c1ad83ff7e0d
