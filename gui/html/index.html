@@ -1,49 +1,78 @@
 <!doctype html>
-<!--
-Copyright 2018 The Go Authors. All rights reserved.
-Use of this source code is governed by a BSD-style
-license that can be found in the LICENSE file.
--->
-<html>
+<html lang="en">
 
 <head>
 	<meta charset="utf-8">
-	<title>Go wasm</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>City AQ</title>
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
-	<!--
-	Add the following polyfill for Microsoft Edge 17/18 support:
-	<script src="https://cdn.jsdelivr.net/npm/text-encoding@0.7.0/lib/encoding.min.js"></script>
-	(see https://caniuse.com/#feat=textencoder)
-	-->
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-3 col-lg-2">
+				<h1>City AQ</h1>
+				<div id="error"></div>
+				<div id="loading" class="d-flex align-items-center" hidden>
+					<strong id="loading_text" hidden>Loading...</strong>
+					<div  id="loading_icon" hidden class="spinner-border text-primary  spinner-border-sm ml-auto" role="status" aria-hidden="true"></div>
+				</div>
+				<form>
+					<div class="form-group">
+						<label for="citySelector">City name</label>
+						<select class="form-control" id="citySelector" aria-describedby="citySelectorHelp"></select>
+						<small id="citySelectorHelp" class="form-text text-muted">Choose a city to explore.</small>
+					</div>
+					<div class="form-group">
+						<label for="impactTypeSelector">Impact type</label>
+						<select class="form-control" id="impactTypeSelector" aria-describedby="impactTypeSelectorHelp"></select>
+						<small id="impactTypeSelectorHelp" class="form-text text-muted">Choose a type of environmental impact.</small>
+					</div>
+					<div class="form-group">
+						<label for="emissionSelector">Emitted pollutant</label>
+						<select class="form-control" id="emissionSelector" aria-describedby="emissionSelectorHelp"></select>
+						<small id="emissionSelectorHelp" class="form-text text-muted">Choose the type of emitted pollutant.</small>
+					</div>
+					<div class="form-group">
+						<label for="sourceTypeSelector">Source type</label>
+						<select class="form-control" id="sourceTypeSelector" aria-describedby="sourceTypeSelectorHelp"></select>
+						<small id="sourceTypeSelectorHelp" class="form-text text-muted">Choose an emissions source type.</small>
+					</div>
+				</form>
+				<div id="legendDiv"></div>
+				<div id="summaryDiv" class="text-center"></div>
+			</div>
+			<div class="col-md-9 col-lg-10">
+				<div id="mapDiv"></div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
 	<script src="wasm_exec.js"></script>
-	<script>
-		if (!WebAssembly.instantiateStreaming) { // polyfill
-			WebAssembly.instantiateStreaming = async (resp, importObject) => {
-				const source = await (await resp).arrayBuffer();
-				return await WebAssembly.instantiate(source, importObject);
-			};
+	<script type="text/javascript">
+		function fetchAndInstantiate(url, importObject) {
+			return fetch(url).then(response =>
+				response.arrayBuffer()
+			).then(bytes =>
+				WebAssembly.instantiate(bytes, importObject)
+			).then(results =>
+				results.instance
+			);
 		}
-
-		const go = new Go();
-		let mod, inst;
-		WebAssembly.instantiateStreaming(fetch("test.wasm"), go.importObject).then((result) => {
-			mod = result.module;
-			inst = result.instance;
-			document.getElementById("runButton").disabled = false;
-		}).catch((err) => {
-			console.error(err);
-		});
-
-		async function run() {
-			console.clear();
-			await go.run(inst);
-			inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
-		}
+		var go = new Go();
+		var mod = fetchAndInstantiate("cityaq.wasm", go.importObject);
+		window.onload = function() {
+			mod.then(function(instance) {
+				go.run(instance);
+			});
+		};
 	</script>
-
-	<button onClick="run();" id="runButton" disabled>Run</button>
 </body>
 
 </html>
