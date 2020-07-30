@@ -1,4 +1,3 @@
-
 # Path to the project.
 ROOT_DIR:=			$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 LIB_FSPATH:=		$(GOPATH)/src/github.com/ctessum/cityaq
@@ -81,19 +80,15 @@ build: dep
 
 
 gen:
-	# TO check that protoc is on the path
-	#@echo $(PATH)
+	# OLD way
 
 	cd $(LIB_FSPATH) && go generate ./...
-	
+
 server-run:
 	cd $(LIB_FSPATH) && go run ./cmd .
 	# https://127.0.0.1:1000/
 
 
-	
 
-	
 
-	
 

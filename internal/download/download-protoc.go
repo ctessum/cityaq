@@ -42,7 +42,7 @@ func main() {
 		protocZipFilename = ProtocZipFilenameMAC
 	}
 
-	if runtime.GOOS == "lunix" {
+	if runtime.GOOS == "linux" {
 		fmt.Println("You are running on Linux")
 		protocZipFilename = ProtocZipFilenameLIN
 	}
