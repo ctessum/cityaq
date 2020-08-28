@@ -25,6 +25,7 @@ import (
 	"github.com/spatialmodel/inmap/cloud"
 	"github.com/spatialmodel/inmap/cloud/cloudrpc"
 	"github.com/spatialmodel/inmap/inmaputil"
+	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -136,6 +137,38 @@ func (c *CityAQ) cloudSetup() error {
 	c.inmapClient, err = cloud.NewClient(clientset, cfg.Root, cfg.Viper, c.CacheLoc, cfg.InputFiles(), cfg.OutputFiles())
 	if err != nil {
 		return fmt.Errorf("failed to initialize InMAP server: %w", err)
+	}
+	c.inmapClient.Volumes = []core.Volume{
+		{
+			Name: "isrmv121",
+			VolumeSource: core.VolumeSource{
+				GCEPersistentDisk: &core.GCEPersistentDiskVolumeSource{
+					PDName:   "isrmv121",
+					FSType:   "ext4",
+					ReadOnly: true,
+				},
+			},
+		},
+		{
+			Name: "apsca",
+			VolumeSource: core.VolumeSource{
+				GCEPersistentDisk: &core.GCEPersistentDiskVolumeSource{
+					PDName:   "apsca",
+					FSType:   "ext4",
+					ReadOnly: true,
+				},
+			},
+		},
+		{
+			Name: "cityaq",
+			VolumeSource: core.VolumeSource{
+				GCEPersistentDisk: &core.GCEPersistentDiskVolumeSource{
+					PDName:   "cityaq",
+					FSType:   "ext4",
+					ReadOnly: true,
+				},
+			},
+		},
 	}
 
 	return nil
