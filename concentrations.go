@@ -294,6 +294,8 @@ func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg,
 	}
 	j.setSectorEmis(cfg)
 
+	cfg.Set("memory_gb", 26)
+
 	// Set emission mask for city.
 	g, err := j.c.geojsonGeometry(j.CityName)
 	if err != nil {
