@@ -42,8 +42,9 @@ func main() {
 			InputSR:               "+proj=longlat",
 			MaxCacheEntries:       100,
 		},
-		CacheLoc:        "file://" + cache,
-		InMAPConfigFile: "testdata/inmap_config.toml",
+		CacheLoc:             "file://" + cache,
+		InMAPConfigFile:      "testdata/inmap_config.toml",
+		InMAPTotalConfigFile: "testdata/inmap_config_coards.toml",
 	}
 
 	srv := cityaq.NewGRPCServer(c)

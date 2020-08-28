@@ -14,9 +14,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ctessum/cityaq/cityaqrpc"
 	rpc "github.com/ctessum/cityaq/cityaqrpc"
 
 	"github.com/ctessum/geom"
+	"github.com/ctessum/geom/encoding/geojson"
 	"github.com/ctessum/geom/encoding/shp"
 	"github.com/ctessum/requestcache/v3"
 	"github.com/spatialmodel/inmap"
@@ -40,9 +42,10 @@ func (c *CityAQ) GriddedConcentrations(ctx context.Context, req *rpc.GriddedConc
 	c.setupCache()
 
 	job := &concentrationJob{
-		c:          c,
-		CityName:   req.CityName,
-		SourceType: req.SourceType,
+		c:              c,
+		CityName:       req.CityName,
+		SourceType:     req.SourceType,
+		SimulationType: req.SimulationType,
 	}
 
 	inmapReq := c.cache.NewRequest(ctx, job)
@@ -84,9 +87,10 @@ func (c *CityAQ) GriddedPopulation(ctx context.Context, req *rpc.GriddedPopulati
 	c.setupCache()
 
 	job := &concentrationJob{
-		c:          c,
-		CityName:   req.CityName,
-		SourceType: req.SourceType,
+		c:              c,
+		CityName:       req.CityName,
+		SourceType:     req.SourceType,
+		SimulationType: req.SimulationType,
 	}
 
 	inmapReq := c.cache.NewRequest(ctx, job)
@@ -138,9 +142,10 @@ func (c *CityAQ) cloudSetup() error {
 }
 
 type concentrationJob struct {
-	c          *CityAQ
-	CityName   string
-	SourceType string
+	c              *CityAQ
+	CityName       string
+	SourceType     string
+	SimulationType cityaqrpc.SimulationType
 }
 
 var alphanum *regexp.Regexp
@@ -150,7 +155,17 @@ func init() {
 }
 
 func (j *concentrationJob) Key() string {
-	k := fmt.Sprintf("concentration_%s_%s", j.CityName, j.SourceType)
+	var k string
+	switch j.SimulationType {
+	case cityaqrpc.SimulationType_CityMarginal:
+		k = fmt.Sprintf("concentration_%s_%s", j.CityName, j.SourceType)
+	case cityaqrpc.SimulationType_CityTotal:
+		k = fmt.Sprintf("concentration_%s_%s_%s", j.SimulationType.String(), j.CityName, j.SourceType)
+	case cityaqrpc.SimulationType_Total:
+		k = fmt.Sprintf("concentration_%s_%s", j.SimulationType.String(), j.SourceType)
+	default:
+		k = "INVALID_SIMULATIONTYPE"
+	}
 	// remove invalid characters
 	k = alphanum.ReplaceAllString(strings.ToLower(k), "")
 	// shorten
@@ -162,56 +177,29 @@ func (j *concentrationJob) Key() string {
 }
 
 func (j *concentrationJob) Run(ctx context.Context, result requestcache.Result) error {
-	shpFile, err := j.emisToShp(ctx)
-	if err != nil {
-		return err
-	}
-
-	cfg := inmaputil.InitializeConfig()
-	cfg.SetConfigFile(j.c.InMAPConfigFile)
-	if err := cfg.ReadInConfig(); err != nil {
-		return fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
-	}
-
 	ctx = context.WithValue(ctx, "user", "cityaq_user")
 
-	cfg.Set("EmissionsShapefiles", []string{shpFile})
-	cfg.Set("job_name", j.Key())
-	cfg.Set("cmds", []string{"run", "steady"})
-
-  cityGeom, err := j.c.CityGeometry(ctx, &rpc.CityGeometryRequest{CityName:j.CityName})
-	if err != nil {
-		return err
+	var cfg *inmaputil.Cfg
+	var err error
+	switch j.SimulationType {
+	case cityaqrpc.SimulationType_CityMarginal:
+		cfg, err = j.cityMarginalConfig(ctx)
+		if err != nil {
+			return err
+		}
+	case cityaqrpc.SimulationType_CityTotal:
+		cfg, err = j.cityTotalConfig(ctx)
+		if err != nil {
+			return err
+		}
+	case cityaqrpc.SimulationType_Total:
+		cfg, err = j.totalConfig(ctx)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("cityaq: invalid InMAP simulation type %s", j.SimulationType)
 	}
-	center := rpcToGeom(cityGeom.Polygons[0]).Centroid()
-
-	// Set lower-left corner of grid so that the
-	// city is in its center, while still overlapping
-	// the underlying CTM grid.
-	vgc, err := inmaputil.VarGridConfig(cfg.Viper)
-	if err != nil {
-		return err
-	}
-	xo := vgc.VariableGridXo
-	yo := vgc.VariableGridYo
-	nx := vgc.Xnests[0]
-	ny := vgc.Ynests[0]
-	dx := vgc.VariableGridDx
-	dy := vgc.VariableGridDy
-	xo = math.Max(xo, roundUnit(center.X-float64(nx)*dx/2, dx))
-	yo = math.Max(yo, roundUnit(center.Y-float64(ny)*dy/2, dy))
-	cfg.Set("VarGrid.VariableGridXo", xo)
-	cfg.Set("VarGrid.VariableGridYo", yo)
-	if xo+dx*float64(nx) > 178 {
-		nx = int((178 - xo) / dx)
-	}
-	if yo+dy*float64(ny) > 89.5 {
-		ny = int((89.5 - yo) / dy)
-	}
-	vgc.Xnests[0] = nx
-	vgc.Ynests[0] = ny
-	cfg.Set("VarGrid.Xnests", intSliceToArg(vgc.Xnests))
-	cfg.Set("VarGrid.Ynests", intSliceToArg(vgc.Ynests))
 
 	in, err := cloud.JobSpec(
 		cfg.Root, cfg.Viper,
@@ -265,6 +253,140 @@ func (j *concentrationJob) Run(ctx context.Context, result requestcache.Result) 
 	return nil
 }
 
+// cityTotalConfig configures InMAP to run a simulation with marginal emissions in a single city.
+func (j *concentrationJob) cityMarginalConfig(ctx context.Context) (*inmaputil.Cfg, error) {
+	shpFile, err := j.emisToShp(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := inmaputil.InitializeConfig()
+	cfg.SetConfigFile(j.c.InMAPConfigFile)
+	if err := cfg.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
+	}
+
+	cfg.Set("EmissionsShapefiles", []string{shpFile})
+	cfg.Set("job_name", j.Key())
+	cfg.Set("cmds", []string{"run", "steady"})
+
+	if err := j.cityDomain(ctx, cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+// cityTotalConfig configures InMAP to run a simulation with emissions inventory
+// emissions, but only emissions in a single city.
+func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg, error) {
+	cfg := inmaputil.InitializeConfig()
+	cfg.SetConfigFile(j.c.InMAPTotalConfigFile)
+	if err := cfg.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
+	}
+
+	cfg.Set("EmissionsShapefiles", []string{})
+	cfg.Set("job_name", j.Key())
+	cfg.Set("cmds", []string{"run", "steady"})
+	if err := j.cityDomain(ctx, cfg); err != nil {
+		return nil, err
+	}
+	j.setSectorEmis(cfg)
+
+	// Set emission mask for city.
+	g, err := j.c.geojsonGeometry(j.CityName)
+	if err != nil {
+		return nil, err
+	}
+	b, err := geojson.Encode(g)
+	if err != nil {
+		return nil, err
+	}
+	cfg.Set("EmissionMaskGeoJSON", string(b))
+
+	return cfg, nil
+}
+
+// totalConfig configures InMAP to run a global simulation with an emissions inventory
+// sector.
+func (j *concentrationJob) totalConfig(ctx context.Context) (*inmaputil.Cfg, error) {
+	cfg := inmaputil.InitializeConfig()
+	cfg.SetConfigFile(j.c.InMAPTotalConfigFile)
+	if err := cfg.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
+	}
+
+	cfg.Set("EmissionsShapefiles", []string{})
+	cfg.Set("job_name", j.Key())
+	cfg.Set("cmds", []string{"run", "steady"})
+	j.setSectorEmis(cfg)
+
+	return cfg, nil
+}
+
+func (j *concentrationJob) cityDomain(ctx context.Context, cfg *inmaputil.Cfg) error {
+	cityGeom, err := j.c.CityGeometry(ctx, &rpc.CityGeometryRequest{CityName: j.CityName})
+	if err != nil {
+		return err
+	}
+	center := rpcToGeom(cityGeom.Polygons[0]).Centroid()
+
+	// Set lower-left corner of grid so that the
+	// city is in its center, while still overlapping
+	// the underlying CTM grid.
+	vgc, err := inmaputil.VarGridConfig(cfg.Viper)
+	if err != nil {
+		return err
+	}
+	xo := vgc.VariableGridXo
+	yo := vgc.VariableGridYo
+	nx := vgc.Xnests[0]
+	ny := vgc.Ynests[0]
+	dx := vgc.VariableGridDx
+	dy := vgc.VariableGridDy
+	xo = math.Max(xo, roundUnit(center.X-float64(nx)*dx/2, dx))
+	yo = math.Max(yo, roundUnit(center.Y-float64(ny)*dy/2, dy))
+	cfg.Set("VarGrid.VariableGridXo", xo)
+	cfg.Set("VarGrid.VariableGridYo", yo)
+	if xo+dx*float64(nx) > 178 {
+		nx = int((178 - xo) / dx)
+	}
+	if yo+dy*float64(ny) > 89.5 {
+		ny = int((89.5 - yo) / dy)
+	}
+	vgc.Xnests[0] = nx
+	vgc.Ynests[0] = ny
+	cfg.Set("VarGrid.Xnests", intSliceToArg(vgc.Xnests))
+	cfg.Set("VarGrid.Ynests", intSliceToArg(vgc.Ynests))
+	return nil
+}
+
+func (j *concentrationJob) setSectorEmis(cfg *inmaputil.Cfg) {
+	emis := cfg.GetStringMapStringSlice("aep.InventoryConfig.COARDSFiles")
+	for sector := range emis {
+		if sector != j.SourceType {
+			delete(emis, sector)
+		}
+	}
+	cfg.Set("aep.InventoryConfig.COARDSFiles", emis)
+}
+
+// EmissionsInventorySectors returns the available emissions source types in the emissions inventory.
+func (c *CityAQ) EmissionsInventorySectors(ctx context.Context, in *cityaqrpc.EmissionsInventorySectorsRequest) (*cityaqrpc.EmissionsInventorySectorsResponse, error) {
+	o := new(cityaqrpc.EmissionsInventorySectorsResponse)
+
+	cfg := inmaputil.InitializeConfig()
+	cfg.SetConfigFile(c.InMAPTotalConfigFile)
+	if err := cfg.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
+	}
+	for sector := range cfg.GetStringMapStringSlice("aep.InventoryConfig.COARDSFiles") {
+		o.Sectors = append(o.Sectors, sector)
+	}
+	return o, nil
+}
+
 // intSliceToArg takes an integer slice and returns
 // an arugment suitable for use by Viper
 func intSliceToArg(i []int) string {
@@ -301,8 +423,8 @@ func (j *concentrationJob) emisToShp(ctx context.Context) (string, error) {
 	file := filepath.Join(dir, "emissions.shp")
 	type emisRecord struct {
 		geom.Polygon
-		PM2_5, VOC, NH3, NOx, SOx float64
-		Height, Diam, Temp,Velocity float64
+		PM2_5, VOC, NH3, NOx, SOx    float64
+		Height, Diam, Temp, Velocity float64
 	}
 	e, err := shp.NewEncoder(file, emisRecord{})
 	if err != nil {

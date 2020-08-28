@@ -3,11 +3,9 @@ module github.com/ctessum/cityaq
 go 1.13
 
 require (
-	github.com/andelf/go-curl v0.0.0-20200630032108-fd49ff24ed97 // indirect
 	github.com/andybalholm/brotli v0.0.0-20190821151343-b60f0d972eeb
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/ctessum/geom v0.2.10-0.20200417141930-c1ad83ff7e0d
-	github.com/ctessum/go-leaflet v0.0.0-20190930105439-32c1547876af
 	github.com/ctessum/requestcache v1.0.1
 	github.com/ctessum/requestcache/v3 v3.0.0
 	github.com/ctessum/sparse v0.0.0-20181201011727-57d6234a2c9d
@@ -34,7 +32,6 @@ require (
 	google.golang.org/grpc v1.28.0
 	google.golang.org/protobuf v1.25.0
 	k8s.io/client-go v10.0.0+incompatible
-	rsc.io/quote/v3 v3.1.0 // indirect
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999

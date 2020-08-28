@@ -72,6 +72,11 @@ func main() {
 	//mkdir -p ./lib-protoc
 	//unzip -a ./$(Protoc-zip-filename) -d ./lib-protoc
 
+	err = os.Remove(protocZipFilename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 // DownloadFile will download a url to a local file. It's efficient because it will

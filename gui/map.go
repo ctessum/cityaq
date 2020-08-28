@@ -89,16 +89,18 @@ func (c *CityAQ) updateMap(ctx context.Context, sel *selections) {
 	c.startLoading()
 
 	if c.legendDiv.IsUndefined() {
-		c.legendDiv.Set("innerHTML", "")
+		c.legendDiv = c.doc.Call("getElementById", "legendDiv")
 	}
+	c.legendDiv.Set("innerHTML", "")
 	if c.summaryDiv.IsUndefined() {
-		c.summaryDiv.Set("innerHTML", "")
+		c.summaryDiv = c.doc.Call("getElementById", "summaryDiv")
 	}
+	c.summaryDiv.Set("innerHTML", "")
 	go func() {
 		c.summary(sel) // Update summary statistics.
 	}()
 
-	if c.dataLayer.IsUndefined() {
+	if !c.dataLayer.IsUndefined() {
 		c.mapboxMap.Call("removeLayer", "data")
 		c.mapboxMap.Call("removeLayer", "city")
 		c.mapboxMap.Call("removeSource", "data")
@@ -106,7 +108,7 @@ func (c *CityAQ) updateMap(ctx context.Context, sel *selections) {
 		c.dataLayer = js.Undefined()
 		c.cityLayer = js.Undefined()
 	}
-	if c.egugridLayer.IsUndefined() {
+	if !c.egugridLayer.IsUndefined() {
 		c.mapboxMap.Call("removeLayer", "egugrid")
 		c.mapboxMap.Call("removeSource", "egugrid")
 		c.egugridLayer = js.Undefined()
@@ -117,14 +119,14 @@ func (c *CityAQ) updateMap(ctx context.Context, sel *selections) {
 		SourceType: sel.sourceType,
 	})
 	if err != nil {
-		c.logError(err)
+		c.logError(fmt.Errorf("loading emissions grid bounds: %w", err))
 		c.stopLoading()
 		return
 	}
 
 	colors, err := c.legend(sel)
 	if err != nil {
-		c.logError(err)
+		c.logError(fmt.Errorf("loading legend: %w", err))
 		c.stopLoading()
 		return
 	}
@@ -135,9 +137,9 @@ func (c *CityAQ) updateMap(ctx context.Context, sel *selections) {
 	source := js.ValueOf(map[string]interface{}{
 		"type": "vector",
 		"tiles": js.ValueOf([]interface{}{
-			fmt.Sprintf("%smaptile?x={x}&y={y}&z={z}&c=%s&it=%d&em=%d&st=%s",
+			fmt.Sprintf("%smaptile?x={x}&y={y}&z={z}&c=%s&it=%d&em=%d&st=%s&sit=%d",
 				c.doc.Get("baseURI").String(), html.EscapeString(sel.cityName),
-				sel.impactType, sel.emission, sel.sourceType),
+				sel.impactType, sel.emission, sel.sourceType, sel.simulationType),
 		}),
 		"bounds":      js.ValueOf([]interface{}{b.Min.X, b.Min.Y, b.Max.X, b.Max.Y}),
 		"attribution": "© CityAQ authors",
@@ -146,8 +148,8 @@ func (c *CityAQ) updateMap(ctx context.Context, sel *selections) {
 	c.dataLayer = c.mapboxMap.Call("addLayer", map[string]interface{}{
 		"id":     "data",
 		"source": source,
-		"source-layer": fmt.Sprintf(fmt.Sprintf("%s_%d_%d_%s",
-			sel.cityName, sel.impactType, sel.emission, sel.sourceType)),
+		"source-layer": fmt.Sprintf(fmt.Sprintf("%s_%d_%d_%s_%d",
+			sel.cityName, sel.impactType, sel.emission, sel.sourceType, sel.simulationType)),
 		"type": "fill",
 		"paint": js.ValueOf(map[string]interface{}{
 			"fill-color": js.ValueOf(append([]interface{}{
@@ -196,19 +198,23 @@ func (c *CityAQ) updateMap(ctx context.Context, sel *selections) {
 
 func (c *CityAQ) legend(sel *selections) ([]interface{}, error) {
 	scale, err := c.MapScale(context.TODO(), &rpc.MapScaleRequest{
-		CityName:   sel.cityName,
-		Emission:   sel.emission,
-		SourceType: sel.sourceType,
-		ImpactType: sel.impactType,
+		CityName:       sel.cityName,
+		Emission:       sel.emission,
+		SourceType:     sel.sourceType,
+		ImpactType:     sel.impactType,
+		SimulationType: sel.simulationType,
 	})
 	if err != nil {
 		return nil, err
 	}
 	cm := moreland.ExtendedBlackBody()
+	if scale.Min == scale.Max && scale.Min == 0 {
+		scale.Min, scale.Max = -1, 1
+	}
 	cm.SetMin(scale.Min)
 	cm.SetMax(scale.Max)
 	go func() {
-		c.setMapLegend(cm, sel.impactType)
+		c.setMapLegend(cm, sel.impactType, sel.simulationType)
 	}()
 
 	cutpts := make([]float64, 10)
@@ -236,7 +242,7 @@ func (c *CityAQ) legend(sel *selections) ([]interface{}, error) {
 	return colors, nil
 }
 
-func (c *CityAQ) setMapLegend(cm palette.ColorMap, it rpc.ImpactType) {
+func (c *CityAQ) setMapLegend(cm palette.ColorMap, it rpc.ImpactType, simT rpc.SimulationType) {
 	p, err := plot.New()
 	if err != nil {
 		panic(err)
@@ -267,7 +273,11 @@ func (c *CityAQ) setMapLegend(cm palette.ColorMap, it rpc.ImpactType) {
 	case rpc.ImpactType_Emissions:
 		title = "<p class=\"small text-center\">Emissions (kg / kilotonne)</p>"
 	case rpc.ImpactType_Concentrations:
-		title = "<p class=\"small text-center\">PM<sub>2.5</sub> concentrations (μg m<sup>-3</sup> / kilotonne emissions)</p>"
+		if simT == rpc.SimulationType_CityMarginal {
+			title = "<p class=\"small text-center\">PM<sub>2.5</sub> concentrations (μg m<sup>-3</sup> / kilotonne emissions)</p>"
+		} else {
+			title = "<p class=\"small text-center\">PM<sub>2.5</sub> concentrations (μg m<sup>-3</sup>)</p>"
+		}
 	}
 	c.legendDiv.Set("innerHTML", title+`<img id="legendimg" class="img-fluid" alt="Legend" src="data:image/png;base64,`+legendStr+`" />`)
 }
@@ -332,9 +342,10 @@ func (c *CityAQ) summary(sel *selections) error {
 		c.summaryDiv = c.doc.Call("getElementById", "summaryDiv")
 	}
 	impacts, err := c.ImpactSummary(context.TODO(), &rpc.ImpactSummaryRequest{
-		CityName:   sel.cityName,
-		Emission:   sel.emission,
-		SourceType: sel.sourceType,
+		CityName:       sel.cityName,
+		Emission:       sel.emission,
+		SourceType:     sel.sourceType,
+		SimulationType: sel.simulationType,
 	})
 	if err != nil {
 		return err

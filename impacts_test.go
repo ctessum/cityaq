@@ -29,9 +29,10 @@ func TestCityAQ_ImpactSummary(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	r := &rpc.ImpactSummaryRequest{
-		CityName:   "Accra Metropolitan",
-		Emission:   rpc.Emission_PM2_5,
-		SourceType: "roadways",
+		CityName:       "Accra Metropolitan",
+		Emission:       rpc.Emission_PM2_5,
+		SourceType:     "roadways",
+		SimulationType: rpc.SimulationType_CityMarginal,
 	}
 
 	s, err := c.ImpactSummary(context.Background(), r)

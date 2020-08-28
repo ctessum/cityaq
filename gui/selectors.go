@@ -68,30 +68,65 @@ func (c *CityAQ) updateEmissionSelector() {
 }
 
 // updateSourceTypeSelector updates the options of source types available.
-func (c *CityAQ) updateSourceTypeSelector() {
+func (c *CityAQ) updateSourceTypeSelector() error {
 	if c.sourceTypeSelector.IsUndefined() {
 		c.sourceTypeSelector = c.doc.Call("getElementById", "sourceTypeSelector")
 	}
-	updateSelector(c.doc, c.sourceTypeSelector,
+	simulationType, err := c.simulationTypeSelectorValue()
+	if err != nil {
+		simulationType = 0
+	}
+	if simulationType == rpc.SimulationType_CityMarginal || simulationType == 0 {
+		updateSelector(c.doc, c.sourceTypeSelector,
+			[]interface{}{
+				"electric_gen_egugrid", "population", "residential",
+				"commercial", "industrial", "builtup", "roadways", "roadways_motorway",
+				"roadways_trunk", "roadways_primary", "roadways_secondary", "roadways_tertiary",
+				"railways", "waterways", "bus_routes", "airports", "agricultural",
+			},
+			[]string{
+				"electric_gen_egugrid", "population", "residential",
+				"commercial", "industrial", "builtup", "roadways", "roadways_motorway",
+				"roadways_trunk", "roadways_primary", "roadways_secondary", "roadways_tertiary",
+				"railways", "waterways", "bus_routes", "airports", "agricultural",
+			})
+		return nil
+	}
+	sectors, err := c.EmissionsInventorySectors(context.Background(), &rpc.EmissionsInventorySectorsRequest{})
+	if err != nil {
+		return err
+	}
+	secI := make([]interface{}, len(sectors.Sectors))
+	for i, sec := range sectors.Sectors {
+		secI[i] = sec
+	}
+	updateSelector(c.doc, c.sourceTypeSelector, secI, sectors.Sectors)
+	return nil
+}
+
+// updateSimulationTypeSelector updates the options of simulation types available.
+func (c *CityAQ) updateSimulationTypeSelector() {
+	if c.simulationTypeSelector.IsUndefined() {
+		c.simulationTypeSelector = c.doc.Call("getElementById", "simulationTypeSelector")
+	}
+	updateSelector(c.doc, c.simulationTypeSelector,
 		[]interface{}{
-			"electric_gen_egugrid", "population", "residential",
-			"commercial", "industrial", "builtup", "roadways", "roadways_motorway",
-			"roadways_trunk", "roadways_primary", "roadways_secondary", "roadways_tertiary",
-			"railways", "waterways", "bus_routes", "airports", "agricultural",
+			int(rpc.SimulationType_CityMarginal), int(rpc.SimulationType_CityTotal), int(rpc.SimulationType_Total),
 		},
 		[]string{
-			"electric_gen_egugrid", "population", "residential",
-			"commercial", "industrial", "builtup", "roadways", "roadways_motorway",
-			"roadways_trunk", "roadways_primary", "roadways_secondary", "roadways_tertiary",
-			"railways", "waterways", "bus_routes", "airports", "agricultural",
+			"City Marginal", "City Total", "Total",
 		})
 }
 
-func (c *CityAQ) updateSelectors(ctx context.Context) {
+func (c *CityAQ) updateSelectors(ctx context.Context) error {
 	c.updateCitySelector(ctx)
 	c.updateImpactTypeSelector()
 	c.updateEmissionSelector()
-	c.updateSourceTypeSelector()
+	c.updateSimulationTypeSelector()
+	if err := c.updateSourceTypeSelector(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func selectorValue(selector js.Value) (string, error) {
@@ -134,11 +169,24 @@ func (c *CityAQ) sourceTypeSelectorValue() (string, error) {
 	return selectorValue(c.sourceTypeSelector)
 }
 
+func (c *CityAQ) simulationTypeSelectorValue() (rpc.SimulationType, error) {
+	v, err := selectorValue(c.simulationTypeSelector)
+	if err != nil {
+		return -1, err
+	}
+	vInt, err := strconv.ParseInt(v, 10, 64)
+	if err != nil {
+		return -1, err
+	}
+	return rpc.SimulationType(vInt), nil
+}
+
 type selections struct {
-	cityName   string
-	impactType rpc.ImpactType
-	sourceType string
-	emission   rpc.Emission
+	cityName       string
+	impactType     rpc.ImpactType
+	sourceType     string
+	emission       rpc.Emission
+	simulationType rpc.SimulationType
 }
 
 var incompleteSelectionError = errors.New("incomplete selection")
@@ -161,6 +209,11 @@ func (c *CityAQ) selectorValues() (s *selections, err error) {
 	}
 
 	s.sourceType, err = c.sourceTypeSelectorValue()
+	if err != nil {
+		return
+	}
+
+	s.simulationType, err = c.simulationTypeSelectorValue()
 	if err != nil {
 		return
 	}

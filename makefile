@@ -50,9 +50,10 @@ build: dep
 
 	@echo
 
-	@echo -- Client dep --
+	@echo -- Generate mock client for testing --
 	go get github.com/golang/mock/gomock 
 	go install github.com/golang/mock/mockgen
+	bash -c "GOOS=js GOARCH=wasm mockgen -source=cityaqrpc/cityaq.wasm.pb.go > cityaqrpc/mock_cityaqrpc/caqmock.go"
 	@echo 
 
 	@echo -- Client WASM build --
@@ -83,6 +84,11 @@ build: dep
 	rm -rf lib-protoc
 	rm download-protoc
 
+test-client-dep:
+	go get github.com/agnivade/wasmbrowsertest
+
+test-client:
+	bash -c "GOOS=js GOARCH=wasm go test ./gui/... -exec=wasmbrowsertest"
 
 gen:
 	# OLD way

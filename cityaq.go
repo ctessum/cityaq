@@ -37,6 +37,10 @@ type CityAQ struct {
 	// configuration information.
 	InMAPConfigFile string
 
+	// InMAPConfigFile specifies the path to the file with InMAP
+	// configuration information for a total-concentration simulation.
+	InMAPTotalConfigFile string
+
 	// cityPaths holds the locations of the files containing the
 	// boundaries of each city.
 	cityPaths         map[string]string
@@ -315,9 +319,10 @@ func (c *CityAQ) MapScale(ctx context.Context, req *rpc.MapScaleRequest) (*rpc.M
 		data = response.Emissions
 	case rpc.ImpactType_Concentrations:
 		response, err := c.GriddedConcentrations(ctx, &rpc.GriddedConcentrationsRequest{
-			CityName:   req.CityName,
-			Emission:   req.Emission,
-			SourceType: req.SourceType,
+			CityName:       req.CityName,
+			Emission:       req.Emission,
+			SourceType:     req.SourceType,
+			SimulationType: req.SimulationType,
 		})
 		if err != nil {
 			return nil, err

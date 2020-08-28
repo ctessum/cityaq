@@ -131,7 +131,9 @@ func TestSelectors(t *testing.T) {
 	c.emissionSelector = c.doc.Call("createElement", "select")
 	c.sourceTypeSelector = c.doc.Call("createElement", "select")
 
-	c.updateSelectors(context.Background())
+	if err := c.updateSelectors(context.Background()); err != nil {
+		t.Fatal(err)
+	}
 
 	changeSelector(c.citySelector, 1)
 	changeSelector(c.impactTypeSelector, 1)

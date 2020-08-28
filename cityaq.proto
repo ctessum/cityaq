@@ -32,6 +32,8 @@ service CityAQ {
 
   // ImpactSummary returns a summary of the impacts from the given request.
   rpc ImpactSummary(ImpactSummaryRequest) returns (ImpactSummaryResponse) {}
+
+  rpc EmissionsInventorySectors(EmissionsInventorySectorsRequest) returns (EmissionsInventorySectorsResponse) {}
 }
 
 message CitiesRequest {
@@ -78,6 +80,7 @@ message GriddedConcentrationsRequest {
   string CityName = 1;
   string SourceType = 2;
   Emission Emission = 3;
+  SimulationType SimulationType = 4;
 }
 
 message GriddedConcentrationsResponse {
@@ -89,6 +92,7 @@ message GriddedPopulationRequest {
   string CityName = 1;
   string SourceType = 2;
   Emission Emission = 3;
+  SimulationType SimulationType = 4;
 }
 
 message GriddedPopulationResponse {
@@ -100,6 +104,7 @@ message ImpactSummaryRequest {
   string CityName = 1;
   string SourceType = 2;
   Emission Emission = 3;
+  SimulationType SimulationType = 4;
 }
 
 message ImpactSummaryResponse {
@@ -134,6 +139,12 @@ message EmissionsGridBoundsResponse {
   Point Max = 2;
 }
 
+message EmissionsInventorySectorsRequest {} 
+
+message EmissionsInventorySectorsResponse {
+  repeated string Sectors = 1;
+}
+
 enum Emission {
   UNKNOWN_EMISSION = 0;
   PM2_5 = 1;
@@ -154,10 +165,18 @@ message MapScaleRequest {
   ImpactType ImpactType = 2;
   Emission Emission = 3;
   string SourceType = 4;
+  SimulationType SimulationType = 5;
 }
 
 message MapScaleResponse {
   double Min = 1;
   double Max = 2;
   double CutPt = 3;
+}
+
+enum SimulationType {
+  UNKNOWN_SIMULATIONTYPE = 0;
+  Total = 1;
+  CityTotal = 2;
+  CityMarginal = 3;
 }

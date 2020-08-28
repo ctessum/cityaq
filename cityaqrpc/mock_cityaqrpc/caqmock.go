@@ -195,6 +195,26 @@ func (mr *MockCityAQClientMockRecorder) ImpactSummary(ctx, in interface{}, opts 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImpactSummary", reflect.TypeOf((*MockCityAQClient)(nil).ImpactSummary), varargs...)
 }
 
+// EmissionsInventorySectors mocks base method
+func (m *MockCityAQClient) EmissionsInventorySectors(ctx context.Context, in *cityaqrpc.EmissionsInventorySectorsRequest, opts ...grpc.CallOption) (*cityaqrpc.EmissionsInventorySectorsResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "EmissionsInventorySectors", varargs...)
+	ret0, _ := ret[0].(*cityaqrpc.EmissionsInventorySectorsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmissionsInventorySectors indicates an expected call of EmissionsInventorySectors
+func (mr *MockCityAQClientMockRecorder) EmissionsInventorySectors(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmissionsInventorySectors", reflect.TypeOf((*MockCityAQClient)(nil).EmissionsInventorySectors), varargs...)
+}
+
 // MockCityAQServer is a mock of CityAQServer interface
 type MockCityAQServer struct {
 	ctrl     *gomock.Controller
@@ -336,4 +356,19 @@ func (m *MockCityAQServer) ImpactSummary(arg0 context.Context, arg1 *cityaqrpc.I
 func (mr *MockCityAQServerMockRecorder) ImpactSummary(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImpactSummary", reflect.TypeOf((*MockCityAQServer)(nil).ImpactSummary), arg0, arg1)
+}
+
+// EmissionsInventorySectors mocks base method
+func (m *MockCityAQServer) EmissionsInventorySectors(arg0 context.Context, arg1 *cityaqrpc.EmissionsInventorySectorsRequest) (*cityaqrpc.EmissionsInventorySectorsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmissionsInventorySectors", arg0, arg1)
+	ret0, _ := ret[0].(*cityaqrpc.EmissionsInventorySectorsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmissionsInventorySectors indicates an expected call of EmissionsInventorySectors
+func (mr *MockCityAQServerMockRecorder) EmissionsInventorySectors(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmissionsInventorySectors", reflect.TypeOf((*MockCityAQServer)(nil).EmissionsInventorySectors), arg0, arg1)
 }

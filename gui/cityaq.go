@@ -14,18 +14,19 @@ import (
 
 type CityAQ struct {
 	rpc.CityAQClient
-	doc                  js.Value
-	citySelector         js.Value
-	impactTypeSelector   js.Value
-	emissionSelector     js.Value
-	sourceTypeSelector   js.Value
-	legendDiv            js.Value
-	summaryDiv           js.Value
-	mapDiv               js.Value
-	mapboxMap            js.Value
-	cityLayer, dataLayer js.Value
-	egugridLayer         js.Value
-	grid                 struct {
+	doc                    js.Value
+	citySelector           js.Value
+	impactTypeSelector     js.Value
+	emissionSelector       js.Value
+	sourceTypeSelector     js.Value
+	simulationTypeSelector js.Value
+	legendDiv              js.Value
+	summaryDiv             js.Value
+	mapDiv                 js.Value
+	mapboxMap              js.Value
+	cityLayer, dataLayer   js.Value
+	egugridLayer           js.Value
+	grid                   struct {
 		geometry js.Value
 		gridCity string
 		gridType rpc.ImpactType
@@ -42,7 +43,9 @@ func NewCityAQ(conn *grpcwasm.ClientConn) *CityAQ {
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
-		c.updateSelectors(context.Background())
+		if err := c.updateSelectors(context.Background()); err != nil {
+			c.logError(err)
+		}
 		wg.Done()
 	}()
 	go func() {
@@ -85,7 +88,7 @@ func (c *CityAQ) Monitor() {
 		}()
 		return nil
 	})
-	for _, s := range []js.Value{c.citySelector, c.impactTypeSelector, c.emissionSelector, c.sourceTypeSelector} {
+	for _, s := range []js.Value{c.citySelector, c.impactTypeSelector, c.emissionSelector, c.sourceTypeSelector, c.simulationTypeSelector} {
 		s.Call("addEventListener", "change", cb)
 	}
 	for _, s := range []js.Value{c.citySelector, c.sourceTypeSelector} {
@@ -93,6 +96,7 @@ func (c *CityAQ) Monitor() {
 			go func() {
 				cityName, err := c.citySelectorValue()
 				if err != nil {
+					c.logError(err)
 					return
 				}
 				sourceType, err := c.sourceTypeSelectorValue()
@@ -104,6 +108,26 @@ func (c *CityAQ) Monitor() {
 			return nil
 		}))
 	}
+	var prevSimType rpc.SimulationType
+	c.simulationTypeSelector.Call("addEventListener", "change", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		// Update source type choices if simulation type changes.
+		go func() {
+			simType, err := c.simulationTypeSelectorValue()
+			if err != nil {
+				return
+			}
+			if !((prevSimType == rpc.SimulationType_CityTotal && simType == rpc.SimulationType_Total) ||
+				(simType == rpc.SimulationType_CityTotal && prevSimType == rpc.SimulationType_Total)) {
+				// Only update if not changing between two total types.
+				if err := c.updateSourceTypeSelector(); err != nil {
+					c.logError(err)
+					return
+				}
+			}
+			prevSimType = simType
+		}()
+		return nil
+	}))
 }
 
 func (c *CityAQ) startLoading() {
@@ -111,7 +135,7 @@ func (c *CityAQ) startLoading() {
 		for _, id := range []string{"loading", "loading_text", "loading_icon"} {
 			c.doc.Call("getElementById", id).Set("hidden", false)
 		}
-		for _, s := range []js.Value{c.citySelector, c.impactTypeSelector, c.emissionSelector, c.sourceTypeSelector} {
+		for _, s := range []js.Value{c.citySelector, c.impactTypeSelector, c.emissionSelector, c.sourceTypeSelector, c.simulationTypeSelector} {
 			s.Set("disabled", true)
 		}
 	}()
@@ -121,7 +145,7 @@ func (c *CityAQ) stopLoading() {
 		for _, id := range []string{"loading", "loading_text", "loading_icon"} {
 			c.doc.Call("getElementById", id).Set("hidden", true)
 		}
-		for _, s := range []js.Value{c.citySelector, c.impactTypeSelector, c.emissionSelector, c.sourceTypeSelector} {
+		for _, s := range []js.Value{c.citySelector, c.impactTypeSelector, c.emissionSelector, c.sourceTypeSelector, c.simulationTypeSelector} {
 			s.Set("disabled", false)
 		}
 	}()

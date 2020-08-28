@@ -13,18 +13,20 @@ import (
 // ImpactSummary returns a summary of the impacts from the given request.
 func (c *CityAQ) ImpactSummary(ctx context.Context, req *rpc.ImpactSummaryRequest) (*rpc.ImpactSummaryResponse, error) {
 	conc, err := c.GriddedConcentrations(ctx, &rpc.GriddedConcentrationsRequest{
-		CityName:   req.CityName,
-		SourceType: req.SourceType,
-		Emission:   req.Emission,
+		CityName:       req.CityName,
+		SourceType:     req.SourceType,
+		Emission:       req.Emission,
+		SimulationType: req.SimulationType,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	pop, err := c.GriddedPopulation(ctx, &rpc.GriddedPopulationRequest{
-		CityName:   req.CityName,
-		SourceType: req.SourceType,
-		Emission:   req.Emission,
+		CityName:       req.CityName,
+		SourceType:     req.SourceType,
+		Emission:       req.Emission,
+		SimulationType: req.SimulationType,
 	})
 	if err != nil {
 		return nil, err

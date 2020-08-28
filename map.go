@@ -68,15 +68,16 @@ func (s *MapTileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type MapSpecification struct {
-	CityName   string
-	ImpactType rpc.ImpactType
-	Emission   rpc.Emission
-	SourceType string
+	CityName       string
+	ImpactType     rpc.ImpactType
+	Emission       rpc.Emission
+	SourceType     string
+	SimulationType rpc.SimulationType
 }
 
 // Key returns a unique identifier for the receiver.
 func (ms *MapSpecification) Key() string {
-	return fmt.Sprintf("%s_%d_%d_%s", ms.CityName, ms.ImpactType, ms.Emission, ms.SourceType)
+	return fmt.Sprintf("%s_%d_%d_%s_%d", ms.CityName, ms.ImpactType, ms.Emission, ms.SourceType, ms.SimulationType)
 }
 
 func queryString(u *url.URL, q url.Values, k string) (string, error) {
@@ -100,7 +101,7 @@ func queryInt(u *url.URL, q url.Values, k string) (int, error) {
 }
 
 // parseRequest parses a request of the type
-// xxx?x={x}&y={y}&z={z}&c={city}&it={ImpactType}&em={Emission}&st={SourceType}
+// xxx?x={x}&y={y}&z={z}&c={city}&it={ImpactType}&em={Emission}&st={SourceType}&sit={SimulationType}
 func parseMapRequest(u *url.URL) (*MapSpecification, int, int, int, error) {
 	q := u.Query()
 	ms := new(MapSpecification)
@@ -136,6 +137,13 @@ func parseMapRequest(u *url.URL) (*MapSpecification, int, int, int, error) {
 	if err != nil {
 		return nil, -1, -1, -1, err
 	}
+
+	i, err = queryInt(u, q, "sit")
+	if err != nil {
+		return nil, -1, -1, -1, err
+	}
+	ms.SimulationType = rpc.SimulationType(i)
+
 	return ms, x, y, z, nil
 }
 
@@ -177,9 +185,10 @@ func (s *MapTileServer) layers(ctx context.Context, r interface{}) (interface{},
 		}
 	case rpc.ImpactType_Concentrations:
 		req := &rpc.GriddedConcentrationsRequest{
-			CityName:   ms.CityName,
-			Emission:   ms.Emission,
-			SourceType: ms.SourceType,
+			CityName:       ms.CityName,
+			Emission:       ms.Emission,
+			SourceType:     ms.SourceType,
+			SimulationType: ms.SimulationType,
 		}
 		var err error
 		dataLayer, err = s.c.concentrationsMapData(ctx, req)
