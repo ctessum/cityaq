@@ -23,15 +23,13 @@ require (
 	github.com/paulmach/orb v0.1.5
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
-	github.com/spatialmodel/inmap v1.7.1-0.20200715230403-470f7ba0dea1
-	github.com/stretchr/testify v1.4.0 // indirect
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
-	golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7 // indirect
+	github.com/spatialmodel/inmap v1.7.1-0.20200828201351-4ca2e9d5a0d0
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	gonum.org/v1/gonum v0.0.0-20191009222026-5d5638e6749a
 	gonum.org/v1/plot v0.0.0-20190615073203-9aa86143727f
 	google.golang.org/grpc v1.28.0
 	google.golang.org/protobuf v1.25.0
-	k8s.io/client-go v10.0.0+incompatible
+	k8s.io/client-go v0.19.0
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
