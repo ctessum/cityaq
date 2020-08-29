@@ -294,7 +294,7 @@ func (j *concentrationJob) cityMarginalConfig(ctx context.Context) (*inmaputil.C
 	}
 
 	cfg := inmaputil.InitializeConfig()
-	cfg.SetConfigFile(j.c.InMAPConfigFile)
+	cfg.SetConfigFile(j.c.InMAPCityMarginalConfigFile)
 	if err := cfg.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
 	}
@@ -314,7 +314,7 @@ func (j *concentrationJob) cityMarginalConfig(ctx context.Context) (*inmaputil.C
 // emissions, but only emissions in a single city.
 func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg, error) {
 	cfg := inmaputil.InitializeConfig()
-	cfg.SetConfigFile(j.c.InMAPTotalConfigFile)
+	cfg.SetConfigFile(j.c.InMAPCityTotalConfigFile)
 	if err := cfg.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
 	}
@@ -326,9 +326,6 @@ func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg,
 		return nil, err
 	}
 	j.setSectorEmis(cfg)
-
-	cfg.Set("memory_gb", 26)
-	cfg.Set("static", false)
 
 	// Set emission mask for city.
 	g, err := j.c.geojsonGeometry(j.CityName)

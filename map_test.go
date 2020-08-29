@@ -22,7 +22,8 @@ func TestParseMapRequest(t *testing.T) {
 		ImpactType: rpc.ImpactType_Emissions,
 		SourceType: "roadways",
 	}
-	u, err := url.Parse(fmt.Sprintf("https://example.com/maptile?x=10&y=11&z=12&c=%s&it=%d&em=%d&st=%s", html.EscapeString(ms.CityName), ms.ImpactType, ms.Emission, ms.SourceType))
+	u, err := url.Parse(fmt.Sprintf("https://example.com/maptile?x=10&y=11&z=12&c=%s&it=%d&em=%d&st=%s&sit=%d",
+		html.EscapeString(ms.CityName), ms.ImpactType, ms.Emission, ms.SourceType, ms.SimulationType))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +63,8 @@ func TestMapTileServer_ServeHTTP(t *testing.T) {
 		ImpactType: rpc.ImpactType_Emissions,
 		SourceType: "roadways",
 	}
-	u := fmt.Sprintf("https://example.com/maptile?x=4090&y=3967&z=13&c=%s&it=%d&em=%d&st=%s", html.EscapeString(ms.CityName), ms.ImpactType, ms.Emission, ms.SourceType)
+	u := fmt.Sprintf("https://example.com/maptile?x=4090&y=3967&z=13&c=%s&it=%d&em=%d&st=%s&sit=%d",
+		html.EscapeString(ms.CityName), ms.ImpactType, ms.Emission, ms.SourceType, ms.SimulationType)
 
 	t.Run("no_compression", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -95,7 +97,7 @@ func TestMapTileServer_ServeHTTP(t *testing.T) {
 			t.Fatalf("wrong number of layers %d", len(layers))
 		}
 
-		if layers[0].Name != "Accra Metropolitan_1_1_roadways" {
+		if layers[0].Name != "Accra Metropolitan_1_1_roadways_0" {
 			t.Errorf("wrong layer name %s", layers[0].Name)
 		}
 
@@ -145,7 +147,7 @@ func TestMapTileServer_ServeHTTP(t *testing.T) {
 			t.Fatalf("wrong number of layers %d", len(layers))
 		}
 
-		if layers[0].Name != "Accra Metropolitan_1_1_roadways" {
+		if layers[0].Name != "Accra Metropolitan_1_1_roadways_0" {
 			t.Errorf("wrong layer name %s", layers[0].Name)
 		}
 

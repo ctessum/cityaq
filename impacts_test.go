@@ -22,8 +22,8 @@ func TestCityAQ_ImpactSummary(t *testing.T) {
 			OutputSR:      "+proj=longlat",
 			InputSR:       "+proj=longlat",
 		},
-		CacheLoc:        "file://" + dir,
-		InMAPConfigFile: "testdata/inmap_config.toml",
+		CacheLoc:                    "file://" + dir,
+		InMAPCityMarginalConfigFile: "testdata/inmap_config.toml",
 	}
 	os.Mkdir(dir, os.ModePerm)
 	defer os.RemoveAll(dir)

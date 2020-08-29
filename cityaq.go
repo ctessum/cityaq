@@ -33,11 +33,15 @@ type CityAQ struct {
 	CacheLoc    string
 	inmapClient *cloud.Client
 
-	// InMAPConfigFile specifies the path to the file with InMAP
-	// configuration information.
-	InMAPConfigFile string
+	// InMAPCityMarginalConfigFile specifies the path to the file with InMAP
+	// configuration information for city marginal simulations.
+	InMAPCityMarginalConfigFile string
 
-	// InMAPConfigFile specifies the path to the file with InMAP
+	// InMAPCityTotalConfigFile specifies the path to the file with InMAP
+	// configuration information for a city-specific total-concentration simulation.
+	InMAPCityTotalConfigFile string
+
+	// InMAPTotalConfigFile specifies the path to the file with InMAP
 	// configuration information for a total-concentration simulation.
 	InMAPTotalConfigFile string
 
