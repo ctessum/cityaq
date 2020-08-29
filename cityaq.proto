@@ -69,6 +69,7 @@ message GriddedEmissionsRequest {
   string CityName = 1;
   string SourceType = 2;
   Emission Emission = 3;
+  SimulationType SimulationType = 4;
 }
 
 message GriddedEmissionsResponse {

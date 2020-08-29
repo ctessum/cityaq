@@ -29,6 +29,7 @@ require (
 	gonum.org/v1/plot v0.0.0-20190615073203-9aa86143727f
 	google.golang.org/grpc v1.28.0
 	google.golang.org/protobuf v1.25.0
+	k8s.io/api v0.19.0
 	k8s.io/client-go v0.19.0
 )
 

@@ -63,11 +63,11 @@ func newEmissions(poly geom.Polygon, pollutant rpc.Emission, sourceType, cityNam
 }
 
 func emissionsMapName(r *rpc.GriddedEmissionsRequest) string {
-	return fmt.Sprintf("%s_%d_%d_%s", r.CityName, rpc.ImpactType_Emissions, r.Emission, r.SourceType)
+	return fmt.Sprintf("%s_%d_%d_%s_%d", r.CityName, rpc.ImpactType_Emissions, r.Emission, r.SourceType, r.SimulationType)
 }
 
 func concentrationsMapName(r *rpc.GriddedConcentrationsRequest) string {
-	return fmt.Sprintf("%s_%d_%d_%s", r.CityName, rpc.ImpactType_Concentrations, r.Emission, r.SourceType)
+	return fmt.Sprintf("%s_%d_%d_%s_%d", r.CityName, rpc.ImpactType_Concentrations, r.Emission, r.SourceType, r.SimulationType)
 }
 
 // GriddedEmissions returns gridded emissions for the request.

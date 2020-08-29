@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html"
+	"log"
 	"net/http"
 	"net/url"
 	"runtime"
@@ -20,6 +21,7 @@ import (
 	"github.com/ctessum/requestcache"
 )
 
+// MapTileServer serves map tiles for visualizing simulation results.
 type MapTileServer struct {
 	c     *CityAQ
 	cache *requestcache.Cache
@@ -37,11 +39,13 @@ func NewMapTileServer(c *CityAQ, cacheSize int) *MapTileServer {
 func (s *MapTileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	mapSpec, x, y, z, err := parseMapRequest(r.URL)
 	if err != nil {
+		log.Print(err)
 		http.Error(w, err.Error(), 404)
 		return
 	}
 	layers, err := s.Layers(r.Context(), mapSpec)
 	if err != nil {
+		log.Print(err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -58,15 +62,18 @@ func (s *MapTileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		data, err = mvt.MarshalGzipped(layers)
 	}
 	if err != nil {
+		log.Print(err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
 	if _, err = w.Write(data); err != nil {
+		log.Print(err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
 }
 
+// MapSpecification holds information to specify the map data to serve.
 type MapSpecification struct {
 	CityName       string
 	ImpactType     rpc.ImpactType
@@ -174,9 +181,10 @@ func (s *MapTileServer) layers(ctx context.Context, r interface{}) (interface{},
 	switch ms.ImpactType {
 	case rpc.ImpactType_Emissions:
 		req := &rpc.GriddedEmissionsRequest{
-			CityName:   ms.CityName,
-			Emission:   ms.Emission,
-			SourceType: ms.SourceType,
+			CityName:       ms.CityName,
+			Emission:       ms.Emission,
+			SourceType:     ms.SourceType,
+			SimulationType: ms.SimulationType,
 		}
 		var err error
 		dataLayer, err = s.c.emissionsMapData(ctx, req)

@@ -95,7 +95,7 @@ gen:
 
 	go generate ./...
 
-server-run:
+serve:
 	go run ./cmd .
 	# https://localhost:10000/
 
