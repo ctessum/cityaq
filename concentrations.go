@@ -336,7 +336,13 @@ func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg,
 	if err != nil {
 		return nil, err
 	}
-	cfg.Set("EmissionMaskGeoJSON", string(b))
+	f, err := os.Create("emis_mask.json")
+	if err != nil {
+		return nil, fmt.Errorf("writing emissions mask: %w", err)
+	}
+	defer f.Close()
+	fmt.Fprint(f, string(b))
+	cfg.Set("EmissionMaskGeoJSON", "emis_mask.json")
 
 	return cfg, nil
 }
