@@ -75,6 +75,7 @@ func TestCityAQ_GriddedConcentrations_cityTotal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer os.Remove("emis_mask.json")
 	concSum := floats.Sum(conc.Concentrations)
 	wantConcSum := 0.0
 	if !similar(concSum, wantConcSum, 1.0e-10) {
