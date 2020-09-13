@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -423,6 +424,7 @@ func (c *CityAQ) EmissionsInventorySectors(ctx context.Context, in *cityaqrpc.Em
 	for sector := range cfg.GetStringMapStringSlice("aep.InventoryConfig.COARDSFiles") {
 		o.Sectors = append(o.Sectors, sector)
 	}
+	sort.Strings(o.Sectors)
 	return o, nil
 }
 
