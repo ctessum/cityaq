@@ -318,21 +318,25 @@ func (j *concentrationJob) cityMarginalConfig(ctx context.Context) (*inmaputil.C
 // cityTotalConfig configures InMAP to run a simulation with emissions inventory
 // emissions, but only emissions in a single city.
 func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg, error) {
+	log.Println(j.Key(), "starting config")
 	cfg := inmaputil.InitializeConfig()
 	cfg.SetConfigFile(j.c.InMAPCityTotalConfigFile)
 	if err := cfg.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("cityaq: problem reading InMAP configuration file: %v", err)
 	}
 
+	log.Println(j.Key(), "setting city domain")
 	cfg.Set("EmissionsShapefiles", []string{})
 	cfg.Set("job_name", j.Key())
 	cfg.Set("cmds", []string{"run", "steady"})
 	if err := j.cityDomain(ctx, cfg); err != nil {
 		return nil, err
 	}
+	log.Println(j.Key(), "setting sector emis")
 	j.setSectorEmis(cfg)
 
 	// Set emission mask for city.
+	log.Println(j.Key(), "getting city geometry")
 	g, err := j.c.geojsonGeometry(j.CityName)
 	if err != nil {
 		return nil, err
@@ -341,6 +345,7 @@ func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg,
 	if err != nil {
 		return nil, err
 	}
+	log.Println(j.Key(), "writing emissions mask")
 	f, err := os.Create("emis_mask.json")
 	if err != nil {
 		return nil, fmt.Errorf("writing emissions mask: %w", err)
@@ -348,6 +353,7 @@ func (j *concentrationJob) cityTotalConfig(ctx context.Context) (*inmaputil.Cfg,
 	defer f.Close()
 	fmt.Fprint(f, string(b))
 	cfg.Set("EmissionMaskGeoJSON", "emis_mask.json")
+	log.Println(j.Key(), "Finished with config")
 
 	return cfg, nil
 }
