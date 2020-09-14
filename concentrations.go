@@ -21,7 +21,7 @@ import (
 	"github.com/ctessum/geom"
 	"github.com/ctessum/geom/encoding/geojson"
 	"github.com/ctessum/geom/encoding/shp"
-	"github.com/ctessum/requestcache/v3"
+	"github.com/ctessum/requestcache/v4"
 	"github.com/spatialmodel/inmap"
 	"github.com/spatialmodel/inmap/cloud"
 	"github.com/spatialmodel/inmap/cloud/cloudrpc"

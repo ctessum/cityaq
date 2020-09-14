@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 
@@ -16,7 +15,7 @@ import (
 	"github.com/ctessum/geom"
 	"github.com/ctessum/geom/encoding/geojson"
 	"github.com/ctessum/geom/index/rtree"
-	"github.com/ctessum/requestcache/v3"
+	"github.com/ctessum/requestcache/v4"
 	"github.com/spatialmodel/inmap/cloud"
 	"github.com/spatialmodel/inmap/emissions/aep/aeputil"
 )
@@ -93,11 +92,10 @@ func (c *CityAQ) loadCityPaths() {
 
 func (c *CityAQ) setupCache() {
 	c.cacheSetupOnce.Do(func() {
-		workers := runtime.GOMAXPROCS(-1)
 		d := requestcache.Deduplicate()
 		m := requestcache.Memory(20)
 		if c.CacheLoc == "" {
-			c.cache = requestcache.NewCache(workers, d, m)
+			c.cache = requestcache.NewCache(d, m)
 		} else if strings.HasPrefix(c.CacheLoc, "gs://") {
 			loc, err := url.Parse(c.CacheLoc)
 			if err != nil {
@@ -108,9 +106,9 @@ func (c *CityAQ) setupCache() {
 			if err != nil {
 				panic(err)
 			}
-			c.cache = requestcache.NewCache(workers, d, m, cf)
+			c.cache = requestcache.NewCache(d, m, cf)
 		} else {
-			c.cache = requestcache.NewCache(workers, d, m,
+			c.cache = requestcache.NewCache(d, m,
 				requestcache.Disk(strings.TrimPrefix(c.CacheLoc, "file://")))
 		}
 	})

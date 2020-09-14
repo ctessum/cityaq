@@ -7,7 +7,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/ctessum/geom v0.2.10-0.20200417141930-c1ad83ff7e0d
 	github.com/ctessum/requestcache v1.0.1
-	github.com/ctessum/requestcache/v3 v3.0.0
+	github.com/ctessum/requestcache/v4 v4.0.0
 	github.com/ctessum/sparse v0.0.0-20181201011727-57d6234a2c9d
 	github.com/ctessum/unit v0.0.0-20160621200450-755774ac2fcb
 	github.com/elazarl/go-bindata-assetfs v1.0.0

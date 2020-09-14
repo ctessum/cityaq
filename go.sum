@@ -95,8 +95,6 @@ github.com/ctessum/requestcache v1.0.1 h1:YDoBJSQw+kQE0hEs+2x4CYB6IXHLZdcpYgKbh8
 github.com/ctessum/requestcache v1.0.1/go.mod h1:xVlz88TkYBiJfpGe9Xo8KvAmfdmaGyvhBJyltQx4WVQ=
 github.com/ctessum/requestcache/v2 v2.0.0 h1:rT1SSj8Yx2nQi19m6cPexlO59FuaX4JbhLYPlr74Fbg=
 github.com/ctessum/requestcache/v2 v2.0.0/go.mod h1:5NbYIrgAaq500bz6iir80Byxex209I5gHg8IqVCO7w8=
-github.com/ctessum/requestcache/v3 v3.0.0 h1:6SWzIArM1WQZVHWx3OkWeknhlXpnZMeIbVkWHm0mZWs=
-github.com/ctessum/requestcache/v3 v3.0.0/go.mod h1:NX3PqFEAwB2WNrZtrLckR3INp0E+Ckl/unFYzEtaQOQ=
 github.com/ctessum/requestcache/v4 v4.0.0 h1:oWF8gb2FwPCURfR7I4+n25Rzv6mhOQN4VazBo8NTZoY=
 github.com/ctessum/requestcache/v4 v4.0.0/go.mod h1:otYUsJaHa2jH15hZR2BnlcB/WayfAiW/QwHX0S/B7dQ=
 github.com/ctessum/sparse v0.0.0-20181201011727-57d6234a2c9d h1:R6rUEdBcieof5DgG6UGkRH6FPBcfI60qRD6KusHIv+c=
@@ -389,10 +387,6 @@ github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a/go.mod h1:X
 github.com/soheilhy/cmux v0.1.4/go.mod h1:IM3LyeVVIOuxMH7sFAkER9+bJ4dT7Ms6E4xg4kGIyLM=
 github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d/go.mod h1:UdhH50NIW0fCiwBSr0co2m7BnFLdv4fQTgdqdJTHFeE=
 github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e/go.mod h1:HuIsMU8RRBOtsCgI77wP899iHVBQpCmg4ErYMZB+2IA=
-github.com/spatialmodel/inmap v1.7.1-0.20200828201351-4ca2e9d5a0d0 h1:VmRH7qIMozLcDsDAYBQShBCsT1orgkfxrPn6PdZK1Ko=
-github.com/spatialmodel/inmap v1.7.1-0.20200828201351-4ca2e9d5a0d0/go.mod h1:TWuq0/4qM1aFuRIhfqiSAQZaJX2xmXUPHNM9mEiRDJY=
-github.com/spatialmodel/inmap v1.7.1-0.20200829194039-52841de78d93 h1:79CJrujAm/QpIefT0t3b1CfRbQjrS25m8oKkfRJuPdE=
-github.com/spatialmodel/inmap v1.7.1-0.20200829194039-52841de78d93/go.mod h1:TWuq0/4qM1aFuRIhfqiSAQZaJX2xmXUPHNM9mEiRDJY=
 github.com/spatialmodel/inmap v1.7.1-0.20200829195015-9143eacc1ccb h1:Q4rb9TE8dAXfzFvLhQf0vW32Q5IppSTJPQvG6R707iA=
 github.com/spatialmodel/inmap v1.7.1-0.20200829195015-9143eacc1ccb/go.mod h1:TWuq0/4qM1aFuRIhfqiSAQZaJX2xmXUPHNM9mEiRDJY=
 github.com/spf13/afero v1.2.2 h1:5jhuqJyZCZf2JRofRvN/nIFgIWNzPa3/Vz8mYylgbWc=

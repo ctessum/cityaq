@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -18,7 +17,7 @@ import (
 	"github.com/paulmach/orb/maptile"
 	"github.com/paulmach/orb/simplify"
 
-	"github.com/ctessum/requestcache"
+	"github.com/ctessum/requestcache/v4"
 )
 
 // MapTileServer serves map tiles for visualizing simulation results.
@@ -32,7 +31,7 @@ type MapTileServer struct {
 // to hold in an in-memory cache.
 func NewMapTileServer(c *CityAQ, cacheSize int) *MapTileServer {
 	s := &MapTileServer{c: c}
-	s.cache = requestcache.NewCache(s.layers, runtime.GOMAXPROCS(-1), requestcache.Deduplicate(), requestcache.Memory(cacheSize))
+	s.cache = requestcache.NewCache(requestcache.Deduplicate(), requestcache.Memory(cacheSize))
 	return s
 }
 
@@ -80,6 +79,7 @@ type MapSpecification struct {
 	Emission       rpc.Emission
 	SourceType     string
 	SimulationType rpc.SimulationType
+	s              *MapTileServer
 }
 
 // Key returns a unique identifier for the receiver.
@@ -154,14 +154,29 @@ func parseMapRequest(u *url.URL) (*MapSpecification, int, int, int, error) {
 	return ms, x, y, z, nil
 }
 
+type layersResponse struct {
+	L mvt.Layers
+}
+
+func (l *layersResponse) MarshalBinary() (data []byte, err error) {
+	return mvt.Marshal(l.L)
+}
+
+func (l *layersResponse) UnmarshalBinary(data []byte) error {
+	var err error
+	l.L, err = mvt.Unmarshal(data)
+	return err
+}
+
 // Layers returns the vector tile layers associated with ms.
 func (s *MapTileServer) Layers(ctx context.Context, ms *MapSpecification) (mvt.Layers, error) {
-	resultI, err := s.cache.NewRequest(ctx, ms, ms.Key()).Result()
+	ms.s = s
+	var layers layersResponse
+	err := s.cache.NewRequest(ctx, ms).Result(&layers)
 	if err != nil {
 		return nil, err
 	}
-	layers := resultI.(mvt.Layers)
-	return cloneLayers(layers), nil
+	return cloneLayers(layers.L), nil
 }
 
 func mapResolution(sourceType, cityName string) float64 {
@@ -175,8 +190,7 @@ func mapResolution(sourceType, cityName string) float64 {
 	return 0.002
 }
 
-func (s *MapTileServer) layers(ctx context.Context, r interface{}) (interface{}, error) {
-	ms := r.(*MapSpecification)
+func (ms *MapSpecification) Run(ctx context.Context, r requestcache.Result) error {
 	var dataLayer *mvt.Layer
 	switch ms.ImpactType {
 	case rpc.ImpactType_Emissions:
@@ -187,9 +201,9 @@ func (s *MapTileServer) layers(ctx context.Context, r interface{}) (interface{},
 			SimulationType: ms.SimulationType,
 		}
 		var err error
-		dataLayer, err = s.c.emissionsMapData(ctx, req)
+		dataLayer, err = ms.s.c.emissionsMapData(ctx, req)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	case rpc.ImpactType_Concentrations:
 		req := &rpc.GriddedConcentrationsRequest{
@@ -199,17 +213,17 @@ func (s *MapTileServer) layers(ctx context.Context, r interface{}) (interface{},
 			SimulationType: ms.SimulationType,
 		}
 		var err error
-		dataLayer, err = s.c.concentrationsMapData(ctx, req)
+		dataLayer, err = ms.s.c.concentrationsMapData(ctx, req)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	default:
-		return nil, fmt.Errorf("invalid impact type %s", ms.ImpactType.String())
+		return fmt.Errorf("invalid impact type %s", ms.ImpactType.String())
 	}
 
-	cityGeom, err := s.c.geojsonGeometry(ms.CityName)
+	cityGeom, err := ms.s.c.geojsonGeometry(ms.CityName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	cityLayerData := geojson.NewFeatureCollection()
 	feature := geojson.NewFeature(geomToOrb(cityGeom))
@@ -217,21 +231,21 @@ func (s *MapTileServer) layers(ctx context.Context, r interface{}) (interface{},
 	cityLayerData = cityLayerData.Append(feature)
 	cityLayer := mvt.NewLayer(ms.CityName, cityLayerData)
 
-	lyrs := mvt.Layers{dataLayer, cityLayer}
+	o := r.(*layersResponse)
+	o.L = mvt.Layers{dataLayer, cityLayer}
 
 	if egugridEmissions(ms.SourceType) {
-		egugridGeom, err := s.c.countryOrGridBuffer(ms.CityName)
+		egugridGeom, err := ms.s.c.countryOrGridBuffer(ms.CityName)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		egugridLayerData := geojson.NewFeatureCollection()
 		feature := geojson.NewFeature(geomToOrb(egugridGeom.Polygon))
 		feature.ID = uint64(0)
 		egugridLayerData = egugridLayerData.Append(feature)
-		lyrs = append(lyrs, mvt.NewLayer(ms.CityName+"_egugrid", egugridLayerData))
+		o.L = append(o.L, mvt.NewLayer(ms.CityName+"_egugrid", egugridLayerData))
 	}
-
-	return lyrs, nil
+	return nil
 }
 
 func cloneLayers(layers mvt.Layers) mvt.Layers {
