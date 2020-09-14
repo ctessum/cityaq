@@ -2,6 +2,7 @@ package cityaq
 
 import (
 	"context"
+	"log"
 
 	rpc "github.com/ctessum/cityaq/cityaqrpc"
 	"github.com/ctessum/geom"
@@ -12,6 +13,7 @@ import (
 
 // ImpactSummary returns a summary of the impacts from the given request.
 func (c *CityAQ) ImpactSummary(ctx context.Context, req *rpc.ImpactSummaryRequest) (*rpc.ImpactSummaryResponse, error) {
+	log.Println(req.CityName, "got ImpactSummary request")
 	conc, err := c.GriddedConcentrations(ctx, &rpc.GriddedConcentrationsRequest{
 		CityName:       req.CityName,
 		SourceType:     req.SourceType,
@@ -21,6 +23,7 @@ func (c *CityAQ) ImpactSummary(ctx context.Context, req *rpc.ImpactSummaryReques
 	if err != nil {
 		return nil, err
 	}
+	log.Println(req.CityName, "finished calculating concentrations")
 
 	pop, err := c.GriddedPopulation(ctx, &rpc.GriddedPopulationRequest{
 		CityName:       req.CityName,

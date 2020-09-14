@@ -34,6 +34,7 @@ import (
 // GriddedConcentrations returns PM2.5 concentrations calculated by the InMAP
 // air quality model.
 func (c *CityAQ) GriddedConcentrations(ctx context.Context, req *rpc.GriddedConcentrationsRequest) (*rpc.GriddedConcentrationsResponse, error) {
+	log.Println(req.CityName, "in Gridded Concentrations")
 	var err error
 	c.cloudSetupOnce.Do(func() {
 		err = c.cloudSetup()
@@ -49,12 +50,14 @@ func (c *CityAQ) GriddedConcentrations(ctx context.Context, req *rpc.GriddedConc
 		SourceType:     req.SourceType,
 		SimulationType: req.SimulationType,
 	}
+	log.Println(job.Key(), "making request")
 
 	inmapReq := c.cache.NewRequest(ctx, job)
 	var result inmapResult
 	if err := inmapReq.Result(&result); err != nil {
 		return nil, err
 	}
+	log.Println(job.Key(), "got result")
 
 	o := &rpc.GriddedConcentrationsResponse{
 		Polygons: polygonsToRPC(result.Grid),
