@@ -235,6 +235,7 @@ func (j *concentrationJob) Run(ctx context.Context, result requestcache.Result) 
 		return fmt.Errorf("cityaq: invalid InMAP simulation type %s", j.SimulationType)
 	}
 
+	log.Println(cfg.GetString("job_name"), "starting job spec")
 	in, err := cloud.JobSpec(
 		cfg.Root, cfg.Viper,
 		cfg.GetString("job_name"),
@@ -242,13 +243,16 @@ func (j *concentrationJob) Run(ctx context.Context, result requestcache.Result) 
 		cfg.InputFiles(),
 		int32(cfg.GetInt("memory_gb")),
 	)
+	log.Println(cfg.GetString("job_name"), "finished job spec")
 	if err != nil {
 		return err
 	}
+	log.Println(cfg.GetString("job_name"), "starting run job")
 	_, err = j.c.inmapClient.RunJob(ctx, in)
 	if err != nil {
 		return err
 	}
+	log.Println(cfg.GetString("job_name"), "finished starting run job")
 
 	for {
 		status, err := j.c.inmapClient.Status(ctx, &cloudrpc.JobName{
