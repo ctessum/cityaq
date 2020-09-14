@@ -379,10 +379,13 @@ func (j *concentrationJob) totalConfig(ctx context.Context) (*inmaputil.Cfg, err
 }
 
 func (j *concentrationJob) cityDomain(ctx context.Context, cfg *inmaputil.Cfg) error {
+	log.Println(j.Key(), "in cityDomain")
 	cityGeom, err := j.c.CityGeometry(ctx, &rpc.CityGeometryRequest{CityName: j.CityName})
 	if err != nil {
 		return err
 	}
+	log.Println(j.Key(), "finished CityGeometry")
+
 	center := rpcToGeom(cityGeom.Polygons[0]).Centroid()
 
 	// Set lower-left corner of grid so that the
@@ -412,6 +415,7 @@ func (j *concentrationJob) cityDomain(ctx context.Context, cfg *inmaputil.Cfg) e
 	vgc.Ynests[0] = ny
 	cfg.Set("VarGrid.Xnests", intSliceToArg(vgc.Xnests))
 	cfg.Set("VarGrid.Ynests", intSliceToArg(vgc.Ynests))
+	log.Println(j.Key(), "finished cityDomain")
 	return nil
 }
 

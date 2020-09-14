@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/url"
 	"os"
@@ -168,12 +169,15 @@ func (c *CityAQ) geojsonGeometry(cityName string) (geom.Polygon, error) {
 		} `json:"features"`
 	}
 
+	log.Println(cityName, "loading city paths")
 	c.loadCityPaths()
+	log.Println(cityName, "loaded city paths")
 	path, ok := c.cityPaths[cityName]
 	if !ok {
 		return nil, fmt.Errorf("invalid city name %s", cityName)
 	}
 
+	log.Println(cityName, "loading city json")
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("opening city geojson file: %v", err)
@@ -183,6 +187,7 @@ func (c *CityAQ) geojsonGeometry(cityName string) (geom.Polygon, error) {
 	if err := dec.Decode(&data); err != nil {
 		return nil, err
 	}
+	log.Println(cityName, "loaded city json")
 
 	var polys geom.Polygon
 	for _, ft := range data.Features {
