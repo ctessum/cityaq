@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -375,16 +376,20 @@ func (j *concentrationJob) cityDomain(ctx context.Context, cfg *inmaputil.Cfg) e
 	// Set lower-left corner of grid so that the
 	// city is in its center, while still overlapping
 	// the underlying CTM grid.
-	vgc, err := inmaputil.VarGridConfig(cfg.Viper)
+	xNests, err := toIntSliceE(cfg.Get("VarGrid.Xnests"))
 	if err != nil {
-		return err
+		return fmt.Errorf("VarGrid.Xnests: %v", err)
 	}
-	xo := vgc.VariableGridXo
-	yo := vgc.VariableGridYo
-	nx := vgc.Xnests[0]
-	ny := vgc.Ynests[0]
-	dx := vgc.VariableGridDx
-	dy := vgc.VariableGridDy
+	yNests, err := toIntSliceE(cfg.Get("VarGrid.Ynests"))
+	if err != nil {
+		return fmt.Errorf("VarGrid.Ynests: %v", err)
+	}
+	xo := cfg.GetFloat64("VarGrid.VariableGridXo")
+	yo := cfg.GetFloat64("VarGrid.VariableGridYo")
+	nx := xNests[0]
+	ny := yNests[0]
+	dx := cfg.GetFloat64("VarGrid.VariableGridDx")
+	dy := cfg.GetFloat64("VarGrid.VariableGridDy")
 	xo = math.Max(xo, roundUnit(center.X-float64(nx)*dx/2, dx))
 	yo = math.Max(yo, roundUnit(center.Y-float64(ny)*dy/2, dy))
 	cfg.Set("VarGrid.VariableGridXo", xo)
@@ -395,10 +400,10 @@ func (j *concentrationJob) cityDomain(ctx context.Context, cfg *inmaputil.Cfg) e
 	if yo+dy*float64(ny) > 89.5 {
 		ny = int((89.5 - yo) / dy)
 	}
-	vgc.Xnests[0] = nx
-	vgc.Ynests[0] = ny
-	cfg.Set("VarGrid.Xnests", intSliceToArg(vgc.Xnests))
-	cfg.Set("VarGrid.Ynests", intSliceToArg(vgc.Ynests))
+	xNests[0] = nx
+	yNests[0] = ny
+	cfg.Set("VarGrid.Xnests", intSliceToArg(xNests))
+	cfg.Set("VarGrid.Ynests", intSliceToArg(yNests))
 	return nil
 }
 
@@ -436,6 +441,21 @@ func intSliceToArg(i []int) string {
 	s = strings.TrimSuffix(s, "}")
 	s = strings.Replace(s, " ", "", -1)
 	return "[" + s + "]"
+}
+
+func toIntSliceE(s interface{}) ([]int, error) {
+	if v, ok := s.([]interface{}); ok {
+		o := make([]int, len(v))
+		for i, val := range v {
+			o[i] = int(val.(int64))
+		}
+		return o, nil
+	}
+	var o []int
+	if err := json.Unmarshal([]byte(s.(string)), &o); err != nil {
+		return nil, err
+	}
+	return o, nil
 }
 
 // roundUnit rounds a float to the nearest inverval of the
