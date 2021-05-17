@@ -183,11 +183,7 @@ func mapResolution(sourceType, cityName string) float64 {
 	if egugridEmissions(sourceType) {
 		return 0.1
 	}
-	// TODO: Revert so that all cities have the same resolution.
-	if cityName == "Guadalajara" || cityName == "Tokyo" || cityName == "Melbourne" {
-		return 0.005
-	}
-	return 0.002
+	return 0.005
 }
 
 func (ms *MapSpecification) Run(ctx context.Context, r requestcache.Result) error {
