@@ -30,7 +30,7 @@ func (c *CityAQ) country(cityName string) (*country, error) {
 			}
 		}
 	}
-	if ctry == nil {
+	if ctry == nil || len(ctry.Polygon) == 0 {
 		return nil, fmt.Errorf("couldn't match country to city %s", cityName)
 	}
 	return ctry, nil
