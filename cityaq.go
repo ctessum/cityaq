@@ -266,6 +266,10 @@ func (c *CityAQ) emissionsGrid(cityName, sourceType string, dx float64) ([]geom.
 	}
 	b := polygon.Bounds()
 
+	if b.Min.X >= b.Max.X || b.Min.Y >= b.Max.Y {
+		return nil, fmt.Errorf("invalid emissionsGrid bounding box (%+v) for %s %s", b, cityName, sourceType)
+	}
+
 	var o []geom.Polygonal
 	const bufferFrac = 0.1
 	buffer := math.Sqrt((b.Max.X-b.Min.X)*(b.Max.Y-b.Min.Y)) * bufferFrac

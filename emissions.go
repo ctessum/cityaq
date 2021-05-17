@@ -220,7 +220,7 @@ func rpcToGeom(p *rpc.Polygon) geom.Polygon {
 	for i, path := range p.Paths {
 		o[i] = make(geom.Path, len(path.Points))
 		for j, point := range path.Points {
-			o[i][j] = geom.Point{point.X, point.Y}
+			o[i][j] = geom.Point{X: point.X, Y: point.Y}
 		}
 	}
 	return o
