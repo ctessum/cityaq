@@ -6,7 +6,6 @@ require (
 	github.com/andybalholm/brotli v0.0.0-20190821151343-b60f0d972eeb
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/ctessum/geom v0.2.10
-	github.com/ctessum/requestcache v1.0.1
 	github.com/ctessum/requestcache/v4 v4.0.0
 	github.com/ctessum/sparse v0.0.0-20181201011727-57d6234a2c9d
 	github.com/ctessum/unit v0.0.0-20160621200450-755774ac2fcb
@@ -23,7 +22,7 @@ require (
 	github.com/paulmach/orb v0.1.6
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
-	github.com/spatialmodel/inmap v1.7.2-0.20201001014440-8ec71400301e
+	github.com/spatialmodel/inmap v1.8.1-0.20210517134158-cb4a88797716
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	gonum.org/v1/gonum v0.0.0-20191009222026-5d5638e6749a
 	gonum.org/v1/plot v0.0.0-20190615073203-9aa86143727f

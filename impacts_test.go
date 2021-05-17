@@ -23,6 +23,7 @@ func TestCityAQ_ImpactSummary(t *testing.T) {
 			InputSR:       "+proj=longlat",
 		},
 		CacheLoc:                    "file://" + dir,
+		Version:                     "latest",
 		InMAPCityMarginalConfigFile: "testdata/inmap_config.toml",
 	}
 	os.Mkdir(dir, os.ModePerm)

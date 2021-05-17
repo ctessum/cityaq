@@ -43,6 +43,7 @@ func main() {
 			MaxCacheEntries:       100,
 		},
 		CacheLoc:                    "file://" + cache,
+		Version:                     "latest",
 		InMAPCityMarginalConfigFile: "testdata/inmap_config.toml",
 		InMAPCityTotalConfigFile:    "testdata/inmap_config_coards.toml",
 		InMAPTotalConfigFile:        "testdata/inmap_config_coards.toml",

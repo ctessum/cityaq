@@ -236,8 +236,13 @@ func (j *concentrationJob) Run(ctx context.Context, result requestcache.Result) 
 		return fmt.Errorf("cityaq: invalid InMAP simulation type %s", j.SimulationType)
 	}
 
+	if j.c.Version == "" {
+		return fmt.Errorf("inmap version must be specified, but is not")
+	}
+
 	in, err := cloud.JobSpec(
 		cfg.Root, cfg.Viper,
+		j.c.Version,
 		cfg.GetString("job_name"),
 		cfg.GetStringSlice("cmds"),
 		cfg.InputFiles(),

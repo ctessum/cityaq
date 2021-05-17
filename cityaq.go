@@ -44,6 +44,10 @@ type CityAQ struct {
 	// configuration information for a total-concentration simulation.
 	InMAPTotalConfigFile string
 
+	// Version specifies the version of the InMAP Docker image that should be
+	// used for running simulations, for example "latest" or "v1.7.2".
+	Version string
+
 	// cityPaths holds the locations of the files containing the
 	// boundaries of each city.
 	cityPaths         map[string]string

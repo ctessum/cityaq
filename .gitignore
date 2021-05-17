@@ -7,7 +7,9 @@ wasm_exec.js
 /lib-protoc/
 protoc*
 
-# downlaod binary
+# downloaded binary
 download-protoc
 
-
+# OSx files
+Icon*
+.DS_Store

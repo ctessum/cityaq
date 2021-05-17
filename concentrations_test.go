@@ -24,6 +24,7 @@ func TestCityAQ_GriddedConcentrations_cityMarginal(t *testing.T) {
 			InputSR:       "+proj=longlat",
 		},
 		CacheLoc:                    "file://" + dir,
+		Version:                     "latest",
 		InMAPCityMarginalConfigFile: "testdata/inmap_config.toml",
 	}
 	os.Mkdir(dir, os.ModePerm)
@@ -59,6 +60,7 @@ func TestCityAQ_GriddedConcentrations_cityTotal(t *testing.T) {
 			InputSR:       "+proj=longlat",
 		},
 		CacheLoc:                 "file://" + dir,
+		Version:                  "latest",
 		InMAPCityTotalConfigFile: "testdata/inmap_config_coards.toml",
 	}
 	os.Mkdir(dir, os.ModePerm)
@@ -95,6 +97,7 @@ func TestCityAQ_GriddedConcentrations_total(t *testing.T) {
 			InputSR:       "+proj=longlat",
 		},
 		CacheLoc:             "file://" + dir,
+		Version:              "latest",
 		InMAPTotalConfigFile: "testdata/inmap_config_coards.toml",
 	}
 	os.Mkdir(dir, os.ModePerm)
