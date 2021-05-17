@@ -295,7 +295,7 @@ func (j *concentrationJob) Run(ctx context.Context, result requestcache.Result) 
 
 // cityTotalConfig configures InMAP to run a simulation with marginal emissions in a single city.
 func (j *concentrationJob) cityMarginalConfig(ctx context.Context) (*inmaputil.Cfg, error) {
-	shpFile, err := j.emisToShp(ctx)
+	shpFile, err := j.emisToShp(ctx, rpc.SimulationType_CityMarginal)
 	if err != nil {
 		return nil, err
 	}
@@ -473,11 +473,12 @@ func roundUnit(x, unit float64) float64 {
 
 // emisToShp calculates the emissions associated with this job and
 // saves them to a temporary shapefile.
-func (j *concentrationJob) emisToShp(ctx context.Context) (string, error) {
+func (j *concentrationJob) emisToShp(ctx context.Context, simulationType rpc.SimulationType) (string, error) {
 	eReq := &rpc.GriddedEmissionsRequest{
-		CityName:   j.CityName,
-		SourceType: j.SourceType,
-		Emission:   rpc.Emission_PM2_5,
+		CityName:       j.CityName,
+		SourceType:     j.SourceType,
+		Emission:       rpc.Emission_PM2_5,
+		SimulationType: simulationType,
 	}
 	emis, err := j.c.GriddedEmissions(ctx, eReq)
 	if err != nil {
