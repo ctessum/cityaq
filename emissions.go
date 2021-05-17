@@ -98,6 +98,10 @@ func (c *CityAQ) GriddedEmissions(ctx context.Context, req *rpc.GriddedEmissions
 		return nil, err
 	}
 
+	if len(grid) == 0 {
+		return nil, fmt.Errorf("emissionsGrid was not correctly created for %v", req)
+	}
+
 	// Make a copy of the spatial configuration to allow the
 	// use of multiple grids.
 	spatialConfig := aeputil.SpatialConfig{
