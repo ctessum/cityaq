@@ -107,6 +107,7 @@ func (c *CityAQ) GriddedEmissions(ctx context.Context, req *rpc.GriddedEmissions
 	spatialConfig := aeputil.SpatialConfig{
 		SrgSpecSMOKE:          c.SpatialConfig.SrgSpecSMOKE,
 		SrgSpecOSM:            c.SpatialConfig.SrgSpecOSM,
+		PostGISURL:            c.SpatialConfig.PostGISURL,
 		SrgShapefileDirectory: c.SpatialConfig.SrgShapefileDirectory,
 		SCCExactMatch:         c.SpatialConfig.SCCExactMatch,
 		GridRef:               c.SpatialConfig.GridRef,

@@ -17,24 +17,30 @@ import (
 
 func main() {
 	sourceTypes := []string{
-		"railways", "electric_gen_egugrid", "population", "residential",
+		"residential", "electric_gen_egugrid",
+		"railways",
 		"commercial", "industrial", "builtup",
 		"roadways_motorway", "roadways_trunk", "roadways_primary",
 		"roadways_secondary", "roadways_tertiary",
 		"roadways", "waterways",
 		"bus_routes", "airports", "agricultural",
-	}
+	} // "population",
 
 	ctx := context.Background()
 	conn, err := grpc.Dial("inmap.run:443", grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")))
 	check(err)
 	client := rpc.NewCityAQClient(conn)
 
-	allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
+	/*allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
 	check(err)
 	var cities []string
 	for _, n := range allCities.Names {
 		cities = append(cities, n)
+	}*/
+
+	cities := []string{
+		"Ciudad de México Metropolitan Region",
+		"Ciudad de México",
 	}
 
 	o, err := os.Create("cityaq_stats.csv")
@@ -50,9 +56,10 @@ func main() {
 				check(backoff.RetryNotify(
 					func() error {
 						impacts, err := client.ImpactSummary(ctx, &rpc.ImpactSummaryRequest{
-							CityName:   city,
-							SourceType: sourceType,
-							Emission:   rpc.Emission(emission),
+							CityName:       city,
+							SourceType:     sourceType,
+							Emission:       rpc.Emission(emission),
+							SimulationType: rpc.SimulationType_CityMarginal,
 						})
 						if err != nil {
 							return err

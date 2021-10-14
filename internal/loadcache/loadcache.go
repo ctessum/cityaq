@@ -17,21 +17,21 @@ import (
 
 func main() {
 	// Set up a client to connect to https://inmap.run.
-	ctx := context.Background()
-	conn, err := grpc.Dial("inmap.run:443", grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")))
-	check(err)
-	client := rpc.NewCityAQClient(conn)
+	//ctx := context.Background()
+	//conn, err := grpc.Dial("inmap.run:443", grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")))
+	//check(err)
+	//client := rpc.NewCityAQClient(conn)
 
 	sourceTypes := []string{
-		"railways", "electric_gen_egugrid", "population", "residential",
-		"commercial", "industrial", "builtup",
+		"residential", "electric_gen_egugrid",
+		"commercial", "industrial", "builtup", "railways",
 		"roadways_motorway", "roadways_trunk", "roadways_primary",
 		"roadways_secondary", "roadways_tertiary",
 		"roadways", "waterways",
 		"bus_routes", "airports", "agricultural",
-	}
+	} // "population",
 
-	/*	cities := []string{
+	cities := []string{
 		/*"Guadalajara",
 		"Autonomous City of Buenos Aires",
 		"City of Johannesburg Metropolitan Municipality",
@@ -50,20 +50,23 @@ func main() {
 		"Lima",
 		"Lagos",
 		"Ho Chi Minh City",
-		"Quezon City",
-	}*/
-	// Missing: "Durban "
-
-	allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
-	check(err)
-	var cities []string
-	for _, n := range allCities.Names {
-		cities = append(cities, n)
+		"Quezon City",*/
+		//"Ciudad de México Metropolitan Region",
+		//"Ciudad de México",
+		"Singapore",
 	}
+	// Missing: "Durban"
+
+	// allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
+	// check(err)
+	// var cities []string
+	// for _, n := range allCities.Names {
+	// 	cities = append(cities, n)
+	// }
 
 	c := make(chan query)
 	var wg sync.WaitGroup
-	const nprocs = 5
+	const nprocs = 32
 	wg.Add(nprocs)
 	for i := 0; i < nprocs; i++ {
 		go func() {
@@ -104,11 +107,12 @@ func runQuery(c chan query, wg *sync.WaitGroup) {
 		bkf := backoff.NewConstantBackOff(30 * time.Second)
 		check(backoff.RetryNotify(
 			func() error {
-				_, err := client.ImpactSummary(ctx, &rpc.ImpactSummaryRequest{
-					//_, err := client.GriddedEmissions(ctx, &rpc.GriddedEmissionsRequest{
-					CityName:   q.name,
-					SourceType: q.sourceType,
-					Emission:   rpc.Emission_PM2_5,
+				//_, err := client.ImpactSummary(ctx, &rpc.ImpactSummaryRequest{
+				_, err := client.GriddedEmissions(ctx, &rpc.GriddedEmissionsRequest{
+					CityName:       q.name,
+					SourceType:     q.sourceType,
+					Emission:       rpc.Emission_PM2_5,
+					SimulationType: rpc.SimulationType_CityMarginal,
 				})
 				if err != nil && (strings.Contains(err.Error(), "no emissions") || strings.Contains(err.Error(), "larger than max")) {
 					fmt.Println(err)
