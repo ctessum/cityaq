@@ -24,7 +24,7 @@ require (
 	github.com/paulmach/orb v0.1.6
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spatialmodel/inmap v1.9.0
+	github.com/spatialmodel/inmap v1.9.3
 	golang.org/x/net v0.0.0-20210505214959-0714010a04ed
 	gonum.org/v1/gonum v0.0.0-20191009222026-5d5638e6749a
 	gonum.org/v1/plot v0.0.0-20190615073203-9aa86143727f

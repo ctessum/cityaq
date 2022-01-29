@@ -843,6 +843,7 @@ github.com/opencontainers/go-digest v1.0.0-rc1.0.20180430190053-c9281466c8b2/go.
 github.com/opencontainers/go-digest v1.0.0/go.mod h1:0JzlMkj0TRzQZfJkVvzbP0HBR3IKzErnv2BNG4W4MAM=
 github.com/opencontainers/image-spec v1.0.0/go.mod h1:BtxoFyWECRxE4U/7sNtV5W15zMzWCbyJoFRP3s7yZA0=
 github.com/opencontainers/image-spec v1.0.1/go.mod h1:BtxoFyWECRxE4U/7sNtV5W15zMzWCbyJoFRP3s7yZA0=
+github.com/opencontainers/image-spec v1.0.2/go.mod h1:BtxoFyWECRxE4U/7sNtV5W15zMzWCbyJoFRP3s7yZA0=
 github.com/opencontainers/runc v0.0.0-20190115041553-12f6a991201f/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
 github.com/opencontainers/runc v0.1.1/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
 github.com/opencontainers/runc v1.0.0-rc8.0.20190926000215-3e425f80a8c9/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
@@ -996,6 +997,8 @@ github.com/spatialmodel/inmap v1.8.1-0.20210517134158-cb4a88797716 h1:6s6eGvqB6I
 github.com/spatialmodel/inmap v1.8.1-0.20210517134158-cb4a88797716/go.mod h1:vGayobOJijeagM4Mau690rnoXRiF8RyNeEnq/4ESFEk=
 github.com/spatialmodel/inmap v1.9.0 h1:JdD6GAFuCuIVntIj4OFYRX2S64Ew1FMgZ58kdcNvYK0=
 github.com/spatialmodel/inmap v1.9.0/go.mod h1:jkw/CGmceshPcKumjxMEhJdh8NOVPbtqN89m+uZT2XE=
+github.com/spatialmodel/inmap v1.9.3 h1:K5SoFjQCt9UvhfgqDABG2c1LiHMEA78P/MHwA8Of1yo=
+github.com/spatialmodel/inmap v1.9.3/go.mod h1:845vmVffIxleB+rKE8bC2g5qLNJ64/lsf04i4mHZPCk=
 github.com/spf13/afero v1.2.2 h1:5jhuqJyZCZf2JRofRvN/nIFgIWNzPa3/Vz8mYylgbWc=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/cast v1.2.0 h1:HHl1DSRbEQN2i8tJmtS6ViPyHx35+p51amrdsiTCrkg=
