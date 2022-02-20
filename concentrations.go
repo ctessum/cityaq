@@ -367,7 +367,7 @@ func (j *concentrationJob) totalConfig(ctx context.Context) (*inmaputil.Cfg, err
 	cfg.Set("EmissionsShapefiles", []string{})
 	cfg.Set("job_name", j.Key())
 	cfg.Set("cmds", []string{"run", "steady"})
-	cfg.Set("aep.SpatialConfig.GridName", j.Key())
+	//cfg.Set("aep.SpatialConfig.GridName", j.Key())
 	j.setSectorEmis(cfg)
 
 	return cfg, nil
