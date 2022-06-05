@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
@@ -80,6 +81,7 @@ func (c *CityAQ) Cities(ctx context.Context, _ *rpc.CitiesRequest) (*rpc.CitiesR
 		c.cityPaths[name] = path
 		return nil
 	})
+	sort.Strings(r.Names)
 	return r, err
 }
 

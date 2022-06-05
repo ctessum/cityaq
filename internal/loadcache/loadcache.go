@@ -17,10 +17,10 @@ import (
 
 func main() {
 	// Set up a client to connect to https://inmap.run.
-	//ctx := context.Background()
-	//conn, err := grpc.Dial("inmap.run:443", grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")))
-	//check(err)
-	//client := rpc.NewCityAQClient(conn)
+	ctx := context.Background()
+	conn, err := grpc.Dial("inmap.run:443", grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")))
+	check(err)
+	client := rpc.NewCityAQClient(conn)
 
 	sourceTypes := []string{
 		"residential", "electric_gen_egugrid",
@@ -29,10 +29,11 @@ func main() {
 		"roadways_secondary", "roadways_tertiary",
 		"roadways", "waterways",
 		"bus_routes", "airports", "agricultural",
-	} // "population",
+		"population",
+	}
 
-	cities := []string{
-		/*"Guadalajara",
+	/*cities := []string{
+		"Guadalajara",
 		"Autonomous City of Buenos Aires",
 		"City of Johannesburg Metropolitan Municipality",
 		"Accra Metropolitan",
@@ -50,23 +51,20 @@ func main() {
 		"Lima",
 		"Lagos",
 		"Ho Chi Minh City",
-		"Quezon City",*/
+		"Quezon City",
 		//"Ciudad de México Metropolitan Region",
 		//"Ciudad de México",
 		"Singapore",
-	}
+	}*/
 	// Missing: "Durban"
 
-	// allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
-	// check(err)
-	// var cities []string
-	// for _, n := range allCities.Names {
-	// 	cities = append(cities, n)
-	// }
+	allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
+	check(err)
+	cities := allCities.Names
 
 	c := make(chan query)
 	var wg sync.WaitGroup
-	const nprocs = 32
+	const nprocs = 8
 	wg.Add(nprocs)
 	for i := 0; i < nprocs; i++ {
 		go func() {
