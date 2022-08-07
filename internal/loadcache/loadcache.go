@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"strings"
 	"sync"
 	"time"
@@ -64,7 +65,7 @@ func main() {
 
 	c := make(chan query)
 	var wg sync.WaitGroup
-	const nprocs = 8
+	const nprocs = 1900
 	wg.Add(nprocs)
 	for i := 0; i < nprocs; i++ {
 		go func() {
@@ -75,6 +76,9 @@ func main() {
 	var i int
 	total := len(cities) * len(sourceTypes)
 	for _, name := range cities {
+		//if !strings.Contains(name, "Maricopa") && !strings.Contains(name, "Phoenix") {
+		//continue
+		//}
 		for _, sourceType := range sourceTypes {
 			c <- query{
 				name:       name,
@@ -101,26 +105,27 @@ func runQuery(c chan query, wg *sync.WaitGroup) {
 	check(err)
 	client := rpc.NewCityAQClient(conn)
 	for q := range c {
-		log.Printf("%d/%d; %s; %s", q.i, q.total, q.name, q.sourceType)
 		bkf := backoff.NewConstantBackOff(30 * time.Second)
 		check(backoff.RetryNotify(
 			func() error {
-				//_, err := client.ImpactSummary(ctx, &rpc.ImpactSummaryRequest{
-				_, err := client.GriddedEmissions(ctx, &rpc.GriddedEmissionsRequest{
+				time.Sleep(time.Duration(rand.Intn(15000)) * time.Second)
+				log.Printf("%d/%d; %s; %s", q.i, q.total, q.name, q.sourceType)
+				_, err := client.ImpactSummary(ctx, &rpc.ImpactSummaryRequest{
+					//_, err := client.GriddedEmissions(ctx, &rpc.GriddedEmissionsRequest{
 					CityName:       q.name,
 					SourceType:     q.sourceType,
 					Emission:       rpc.Emission_PM2_5,
 					SimulationType: rpc.SimulationType_CityMarginal,
 				})
 				if err != nil && (strings.Contains(err.Error(), "no emissions") || strings.Contains(err.Error(), "larger than max")) {
-					fmt.Println(err)
+					fmt.Println(q.name, q.sourceType, err)
 					return nil
 				}
 				return err
 			},
 			bkf,
 			func(err error, d time.Duration) {
-				log.Printf("%v: retrying in %v", err, d)
+				log.Printf("%v, %v, %v: retrying in %v", q.name, q.sourceType, err, d)
 			},
 		))
 	}

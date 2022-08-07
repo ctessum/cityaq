@@ -24,24 +24,25 @@ func main() {
 		"roadways_secondary", "roadways_tertiary",
 		"roadways", "waterways",
 		"bus_routes", "airports", "agricultural",
-	} // "population",
+		"population",
+	}
 
 	ctx := context.Background()
 	conn, err := grpc.Dial("inmap.run:443", grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")))
 	check(err)
 	client := rpc.NewCityAQClient(conn)
 
-	/*allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
+	allCities, err := client.Cities(ctx, &rpc.CitiesRequest{})
 	check(err)
 	var cities []string
 	for _, n := range allCities.Names {
 		cities = append(cities, n)
-	}*/
-
-	cities := []string{
-		"Ciudad de México Metropolitan Region",
-		"Ciudad de México",
 	}
+
+	//cities := []string{
+	//	"Ciudad de México Metropolitan Region",
+	//	"Ciudad de México",
+	//}
 
 	o, err := os.Create("cityaq_stats.csv")
 	check(err)
