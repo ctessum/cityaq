@@ -5,14 +5,11 @@ go 1.13
 require (
 	github.com/andybalholm/brotli v0.0.0-20190821151343-b60f0d972eeb
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/coreos/bbolt v1.3.1-coreos.6 // indirect
-	github.com/coreos/etcd v3.3.10+incompatible // indirect
 	github.com/ctessum/geom v0.2.10
 	github.com/ctessum/requestcache/v4 v4.0.0
 	github.com/ctessum/sparse v0.0.0-20181201011727-57d6234a2c9d
 	github.com/ctessum/unit v0.0.0-20160621200450-755774ac2fcb
 	github.com/elazarl/go-bindata-assetfs v1.0.0
-	github.com/go-ini/ini v1.39.0 // indirect
 	github.com/golang/gddo v0.0.0-20190904175337-72a348e765d2 // indirect
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2
@@ -25,13 +22,11 @@ require (
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spatialmodel/inmap v1.9.3
-	golang.org/x/net v0.0.0-20210505214959-0714010a04ed
+	golang.org/x/net v0.7.0
 	gonum.org/v1/gonum v0.0.0-20191009222026-5d5638e6749a
 	gonum.org/v1/plot v0.0.0-20190615073203-9aa86143727f
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
-	gopkg.in/ini.v1 v1.39.0 // indirect
-	gopkg.in/pipe.v2 v2.0.0-20140414041502-3c2ca4d52544 // indirect
 	k8s.io/api v0.20.1
 	k8s.io/client-go v0.20.1
 )
